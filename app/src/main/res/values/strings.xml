@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">LendABook</string>
+
+    <!--App Heading And Description-->
+    <string name="login_title">Login Your Account</string>
+    <string name="create_account_title">Create Your Account</string>
+    <string name="forget_password">Forget Your Password</string>
+
+
+    <!--TextField Title and Desc Name-->
+    <string name="name">Name</string>
+    <string name="name_desc">Enter your full name</string>
+    <string name="password">Password</string>
+    <string name="password_desc">Enter your password</string>
+    <string name="email">Email</string>
+    <string name="email_desc">Enter your email</string>
+
+    <!-- Actions -->
+    <string name="login">Login</string>
+    <string name="create_account">Create Account</string>
+    <string name="reset_email">Send Reset Email</string>
+
+    <!-- Validation Messages -->
+    <string name="error_name_required">Name is required</string>
+    <string name="error_invalid_email">Invalid email address</string>
+    <string name="error_invalid_password">Invalid password</string>
+    <string name="error_required_field">This field is required</string>
+
+    <!-- Error Messages -->
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_loading_login">Failed to login</string>
+    <string name="error_create_account">Failed to create account</string>
+
+    <!-- Success Messages -->
+    <string name="success_login">Successfully to login</string>
+    <string name="success_create_account">Successfully to create account</string>
+
+</resources>
