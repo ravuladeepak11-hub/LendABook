@@ -7,5 +7,5 @@ data class CreateAccountUiState(
     val email: String = "",
     val emailError: String? = null,
     val password: String = "",
-    val passwordError: String? = null,
+    val passwordError:List<String>? = null,
 )

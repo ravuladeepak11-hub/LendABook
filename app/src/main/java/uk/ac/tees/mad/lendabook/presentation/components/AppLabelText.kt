@@ -1,4 +1,4 @@
-package uk.ac.tees.mad.lendabook.presentation.components.atomic
+package uk.ac.tees.mad.lendabook.presentation.components
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -7,15 +7,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 
 @Composable
-fun AppTitleText(
-    title: String,
-    modifier: Modifier = Modifier
+fun AppLabelText(
+    label: String,
+    modifier: Modifier = Modifier,
 ) {
     Text(
-        text = title,
+        text = label,
         modifier = modifier,
-        style = MaterialTheme.typography.titleLarge,
+        style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.onBackground,
-        fontWeight = FontWeight.Bold
+        fontWeight = FontWeight.SemiBold
     )
 }

@@ -7,7 +7,6 @@ sealed class CreateAccountUiEvent {
     object CreateAccountClicked : CreateAccountUiEvent()
 }
 
-sealed interface CreateAccountNavigationEvent {
-    object ForgetScreen : CreateAccountNavigationEvent
-    object HomeScreen : CreateAccountNavigationEvent
+enum class CreateAccountNavigation {
+    Forget, Home, Login
 }

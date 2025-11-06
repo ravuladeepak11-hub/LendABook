@@ -1,4 +1,4 @@
-package uk.ac.tees.mad.lendabook.presentation.screens.login
+package uk.ac.tees.mad.lendabook.presentation.screens.forget
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
@@ -32,34 +31,30 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import uk.ac.tees.mad.lendabook.R
 import uk.ac.tees.mad.lendabook.domain.common.UiState
-import uk.ac.tees.mad.lendabook.presentation.components.AppIcon
 import uk.ac.tees.mad.lendabook.presentation.components.AppTitleText
 import uk.ac.tees.mad.lendabook.presentation.components.textfields.EmailTextField
-import uk.ac.tees.mad.lendabook.presentation.components.textfields.PasswordTextField
-import uk.ac.tees.mad.lendabook.presentation.navigation.CreateAccountRoute
-import uk.ac.tees.mad.lendabook.presentation.navigation.HomeRoute
+import uk.ac.tees.mad.lendabook.presentation.navigation.LoginRoute
 import uk.ac.tees.mad.lendabook.utils.Dimen
 import uk.ac.tees.mad.lendabook.utils.showToast
 
 @Composable
-fun LoginScreen(navHostController: NavHostController) {
+fun ForgetScreen(navController: NavHostController) {
 
-    val viewModel: LoginViewModel = hiltViewModel()
+    val viewModel: ForgetViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    //For UiState
+    //UiState
     LaunchedEffect(uiState) {
         when (uiState) {
-            is UiState.Error -> {
-                val errorMessage = (uiState as UiState.Error).message
-                context.showToast(errorMessage)
-            }
-
             is UiState.Success -> {
                 val successMessage = (uiState as UiState.Success).message
                 context.showToast(successMessage)
+            }
 
+            is UiState.Error -> {
+                val errorMessage = (uiState as UiState.Error).message
+                context.showToast(errorMessage)
             }
 
             else -> Unit
@@ -68,86 +63,61 @@ fun LoginScreen(navHostController: NavHostController) {
 
     //For Navigation
     LaunchedEffect(Unit) {
-        viewModel.loginNavigation.collect { navigationEvent ->
+        viewModel.forgetNavigation.collect { navigationEvent ->
             when (navigationEvent) {
-                LoginNavigation.Forget -> {
-
-                }
-
-                LoginNavigation.Home -> {
-                    navHostController.navigate(HomeRoute)
-                }
-
-                LoginNavigation.CreateAccount -> {
-                    navHostController.navigate(CreateAccountRoute)
+                ForgetNavigation.Login -> {
+                    navController.navigate(LoginRoute)
                 }
             }
         }
     }
-
     val gradientBackground = listOf(
         MaterialTheme.colorScheme.surface,
         MaterialTheme.colorScheme.background,
     )
-
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Brush.linearGradient(gradientBackground)),
     ) {
-        LoginContent(viewModel, uiState)
+        ForgetContent(viewModel, uiState)
     }
 
 }
 
 @Composable
-fun LoginContent(viewModel: LoginViewModel, uiState: UiState) {
+fun ForgetContent(viewModel: ForgetViewModel, uiState: UiState) {
 
-    val loginUiState by viewModel.loginUiState.collectAsState()
-    val focusManager = LocalFocusManager.current
+    val focusManger = LocalFocusManager.current
+    val forgetUiState by viewModel.forgetUiState.collectAsState()
 
     Column(
         modifier = Modifier
             .statusBarsPadding()
             .padding(horizontal = Dimen.PaddingMedium),
         verticalArrangement = Arrangement.Center
-    )
-    {
-        AppIcon(
-            iconSize = 48.dp,
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        )
-        Spacer(modifier = Modifier.height(Dimen.SpacerExtraLarge))
-        Column() {
+    ) {
+        Column {
             AppTitleText(
-                title = "Welcome Back!"
+                title = stringResource(R.string.forget_password)
             )
             Spacer(modifier = Modifier.height(Dimen.SpacerMedium))
             EmailTextField(
-                value = loginUiState.email,
+                value = forgetUiState.email,
                 onValueChange = { newEmail ->
-                    viewModel.onEvent(LoginUiEvent.EmailChanged(newEmail))
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(Dimen.SpacerSmall))
-            PasswordTextField(
-                value = loginUiState.password,
-                onValueChange = { newPassword ->
-                    viewModel.onEvent(LoginUiEvent.PasswordChange(newPassword))
+                    viewModel.onEvent(ForgetUiEvent.EmailChanged(newEmail))
                 },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardActions = KeyboardActions(
                     onDone = {
-                        focusManager.clearFocus()
+                        focusManger.clearFocus()
                     }
                 )
             )
-            Spacer(modifier = Modifier.height(Dimen.SpacerMedium))
+            Spacer(modifier = Modifier.height(Dimen.SpacerSmall))
             Button(
                 onClick = {
-                    viewModel.onEvent(LoginUiEvent.LoginClicked)
+                    viewModel.onEvent(ForgetUiEvent.SendRestClick)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -161,27 +131,10 @@ fun LoginContent(viewModel: LoginViewModel, uiState: UiState) {
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text(text = stringResource(R.string.login))
+                        Text(text = stringResource(R.string.reset_email))
                     }
                 }
             }
-            Spacer(modifier = Modifier.weight(1f))
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "Don't have an account?")
-            }
-            Button(
-                onClick = {},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-            ) {
-                Text(text = stringResource(R.string.create_account))
-            }
-            Spacer(modifier = Modifier.height(Dimen.SpacerMedium))
         }
-
     }
 }
