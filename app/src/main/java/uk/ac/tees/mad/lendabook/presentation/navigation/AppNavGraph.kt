@@ -18,7 +18,7 @@ fun AppNavGraph() {
 
     NavHost(
         navController = navController,
-        startDestination = ForgetRoute
+        startDestination = AddBookRoute
     ) {
         composable<SplashRoute> {
             SplashScreen()
