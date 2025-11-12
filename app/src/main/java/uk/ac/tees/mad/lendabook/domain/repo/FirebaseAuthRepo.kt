@@ -7,5 +7,6 @@ interface FirebaseAuthRepo {
     suspend fun forgetPassword(email: String): Result<Unit>
     suspend fun deleteUser(): Result<Unit>
     suspend fun signOut(): Result<Unit>
+    suspend fun getUserId(): String?
 
 }

@@ -3,10 +3,12 @@ package uk.ac.tees.mad.lendabook.di
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import uk.ac.tees.mad.lendabook.data.repo.AddBookRepoImpl
 import uk.ac.tees.mad.lendabook.data.repo.FirebaseAuthRepoImpl
 import javax.inject.Singleton
 
@@ -26,5 +28,18 @@ object FirebaseModule {
     fun provideFirebaseAuth(firebaseAuth: FirebaseAuth): FirebaseAuthRepoImpl {
         return FirebaseAuthRepoImpl(firebaseAuth)
     }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseFirestore(): FirebaseFirestore {
+        return FirebaseFirestore.getInstance()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirestore(firebaseFirestore: FirebaseFirestore): AddBookRepoImpl {
+        return AddBookRepoImpl(firebaseFirestore)
+    }
+
 
 }
