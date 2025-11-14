@@ -67,12 +67,14 @@ class LoginViewModel @Inject constructor(
             ).onSuccess {
                 _uiState.value = UiState.Success("Login Successfully")
                 _loginNavigation.emit(LoginNavigation.Home)
-                _uiState.value = UiState.Idle
             }.onFailure { throwable ->
                 _uiState.value = UiState.Error("$throwable: Login Failed")
-                _uiState.value = UiState.Idle
             }
         }
+    }
+
+    fun restUiState() {
+        _uiState.value = UiState.Idle
     }
 
 

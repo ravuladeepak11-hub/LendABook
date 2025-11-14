@@ -55,11 +55,13 @@ fun CreateAccountScreen(navController: NavHostController) {
             is UiState.Success -> {
                 val successMessage = (uiState as UiState.Success).message
                 context.showToast(successMessage)
+                viewModel.restUiState()
             }
 
             is UiState.Error -> {
                 val errorMessage = (uiState as UiState.Error).message
                 context.showToast(errorMessage)
+                viewModel.restUiState()
             }
 
             else -> Unit

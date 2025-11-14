@@ -62,16 +62,18 @@ class ForgetViewModel @Inject constructor(
             result.onSuccess {
                 _uiState.value = UiState.Success("Password reset link sent to ${forgetUiState.value.email}")
                 _forgetNavigation.emit(ForgetNavigation.Login)
-                _uiState.value = UiState.Idle
             }
 
             result.onFailure {
                 _uiState.value = UiState.Error(
                     it.localizedMessage ?: "Unable to send reset link. Please check the email."
                 )
-                _uiState.value = UiState.Idle
             }
         }
+    }
+
+    fun restUiState() {
+        _uiState.value = UiState.Idle
     }
 
 }

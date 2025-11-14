@@ -1,8 +1,9 @@
 package uk.ac.tees.mad.lendabook.presentation.screens.addbook
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +26,7 @@ import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,6 +40,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,14 +49,45 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import uk.ac.tees.mad.lendabook.R
+import uk.ac.tees.mad.lendabook.domain.common.UiState
 import uk.ac.tees.mad.lendabook.utils.Dimen
+import uk.ac.tees.mad.lendabook.utils.showToast
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddBookScreen(modifier: Modifier = Modifier) {
+fun AddBookScreen(viewModel: AddBookViewModel = hiltViewModel()) {
+
+
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    //UiState
+    LaunchedEffect(uiState) {
+        when (uiState) {
+            is UiState.Success -> {
+                val successMessage = (uiState as UiState.Success).message
+                context.showToast(successMessage)
+                viewModel.restUiState()
+            }
+
+            is UiState.Error -> {
+                val errorMessage = (uiState as UiState.Error).message
+                context.showToast(errorMessage)
+                viewModel.restUiState()
+            }
+
+            else -> Unit
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -69,19 +105,14 @@ fun AddBookScreen(modifier: Modifier = Modifier) {
         },
         containerColor = MaterialTheme.colorScheme.surface,
     ) { paddingValues ->
-        AddBookContent(paddingValues)
+        AddBookContent(paddingValues, viewModel, uiState)
     }
 }
 
 @Composable
-fun AddBookContent(paddingValues: PaddingValues) {
+fun AddBookContent(paddingValues: PaddingValues, viewModel: AddBookViewModel, uiState: UiState) {
 
-    var title by remember { mutableStateOf("") }
-    var author by remember { mutableStateOf("") }
-    var isbn by remember { mutableStateOf("") }
-    var postcode by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("Fiction") }
-    var condition by remember { mutableStateOf("New") }
+    val addBookUiState by viewModel.addBookUiState.collectAsState()
     val categories = listOf("Fiction", "Non-fiction", "Comics", "Biography")
     val conditions = listOf("New", "Used", "Good", "Fair")
 
@@ -144,32 +175,60 @@ fun AddBookContent(paddingValues: PaddingValues) {
             verticalArrangement = Arrangement.spacedBy(Dimen.SpacerSmall)
         ) {
             OutlinedTextField(
-                value = title, onValueChange = { title = it },
+                value = addBookUiState.bookTitle,
+                onValueChange = {
+                    viewModel.onEvent(AddBookUiEvent.TitleChanged(it))
+                },
                 label = { Text("Enter book title") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
             OutlinedTextField(
-                value = author, onValueChange = { author = it },
+                value = addBookUiState.authorName,
+                onValueChange = { viewModel.onEvent(AddBookUiEvent.AuthorChange(it)) },
                 label = { Text("Enter author's name") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
 
-            DropdownSelector("Category", category, categories) { category = it }
+            DropdownSelector(
+                label = "Category",
+                selectedValue = addBookUiState.category,
+                options = categories
+            ) {
+                viewModel.onEvent(
+                    AddBookUiEvent.CategoryChanged(it)
+                )
+            }
 
-            DropdownSelector("Condition", condition, conditions) { condition = it }
+            DropdownSelector(
+                label = "Condition",
+                selectedValue = addBookUiState.condition,
+                options = conditions
+            ) {
+                viewModel.onEvent(
+                    AddBookUiEvent.ConditionChanged(it)
+                )
+            }
 
             Row(horizontalArrangement = Arrangement.spacedBy(Dimen.SpacerSmall)) {
                 OutlinedTextField(
-                    value = postcode, onValueChange = { postcode = it },
+                    value = addBookUiState.postalCode,
+                    onValueChange = { viewModel.onEvent(AddBookUiEvent.PostCodeChanged(it)) },
                     label = { Text("Postcode") },
                     modifier = Modifier.weight(1f),
                     singleLine = true
                 )
                 OutlinedTextField(
-                    value = isbn, onValueChange = { isbn = it },
-                    label = { Text("ISBN (Optional)", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    value = addBookUiState.bookISBN,
+                    onValueChange = { viewModel.onEvent(AddBookUiEvent.ISBNChanged(it)) },
+                    label = {
+                        Text(
+                            "ISBN",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
                     modifier = Modifier.weight(1f),
                     singleLine = true
                 )
@@ -178,14 +237,28 @@ fun AddBookContent(paddingValues: PaddingValues) {
         Spacer(modifier = Modifier.height(Dimen.SpacerMedium))
         //Upload Book Button
         Button(
-            onClick = { /* Upload book */ },
+            onClick = {
+                viewModel.onEvent(AddBookUiEvent.UploadBookClicked)
+            },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             )
         ) {
-            Text("Upload Book")
+            AnimatedContent(
+                targetState = (uiState is UiState.Loading)
+            ) { loading ->
+                if (loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(text = stringResource(R.string.create_account))
+                }
+            }
         }
     }
 
@@ -231,5 +304,10 @@ fun DropdownSelector(
     }
 }
 
-
+@Preview
+@Composable
+fun pre(){
+    val viewModel = hiltViewModel<AddBookViewModel>()
+    AddBookScreen(viewModel)
+}
 

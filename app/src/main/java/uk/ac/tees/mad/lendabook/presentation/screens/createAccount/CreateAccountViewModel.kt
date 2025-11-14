@@ -76,12 +76,13 @@ class CreateAccountViewModel @Inject constructor(
             ).onSuccess {
                 _uiState.value = UiState.Success("Create Account Success!")
                 _createAccountNavigation.emit(CreateAccountNavigation.Home)
-                _uiState.value = UiState.Idle
             }.onFailure { throwable ->
                 _uiState.value =
                     UiState.Error(throwable.localizedMessage ?: "Create Account Failed!")
-                _uiState.value = UiState.Idle
             }
         }
+    }
+    fun restUiState() {
+        _uiState.value = UiState.Idle
     }
 }
