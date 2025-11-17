@@ -52,7 +52,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import uk.ac.tees.mad.lendabook.R
@@ -63,9 +62,9 @@ import uk.ac.tees.mad.lendabook.utils.showToast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddBookScreen(viewModel: AddBookViewModel = hiltViewModel()) {
+fun AddBookScreen() {
 
-
+    val viewModel: AddBookViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
@@ -304,10 +303,5 @@ fun DropdownSelector(
     }
 }
 
-@Preview
-@Composable
-fun pre(){
-    val viewModel = hiltViewModel<AddBookViewModel>()
-    AddBookScreen(viewModel)
-}
+
 

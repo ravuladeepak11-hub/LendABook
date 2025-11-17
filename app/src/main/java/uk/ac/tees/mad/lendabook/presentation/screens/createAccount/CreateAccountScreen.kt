@@ -37,7 +37,7 @@ import uk.ac.tees.mad.lendabook.presentation.components.textfields.EmailTextFiel
 import uk.ac.tees.mad.lendabook.presentation.components.textfields.NameTextField
 import uk.ac.tees.mad.lendabook.presentation.components.textfields.PasswordTextField
 import uk.ac.tees.mad.lendabook.presentation.navigation.ForgetRoute
-import uk.ac.tees.mad.lendabook.presentation.navigation.HomeRoute
+import uk.ac.tees.mad.lendabook.presentation.navigation.BrowseBookRoute
 import uk.ac.tees.mad.lendabook.presentation.navigation.LoginRoute
 import uk.ac.tees.mad.lendabook.utils.Dimen
 import uk.ac.tees.mad.lendabook.utils.showToast
@@ -77,7 +77,7 @@ fun CreateAccountScreen(navController: NavHostController) {
                 }
 
                 CreateAccountNavigation.Home -> {
-                    navController.navigate(HomeRoute)
+                    navController.navigate(BrowseBookRoute)
                 }
 
                 CreateAccountNavigation.Login -> {

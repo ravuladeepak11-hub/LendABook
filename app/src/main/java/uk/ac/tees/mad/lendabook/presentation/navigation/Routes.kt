@@ -18,10 +18,16 @@ object ForgetRoute
 
 //Main Routes
 @Serializable
-object MainRoute
+object DashboardRoute
 
 @Serializable
-object HomeRoute
+object BrowseBookRoute
 
 @Serializable
 object AddBookRoute
+
+@Serializable
+object MessageRoute
+
+@Serializable
+object SettingRoute

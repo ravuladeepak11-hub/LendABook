@@ -3,12 +3,15 @@ package uk.ac.tees.mad.lendabook.presentation.navigation
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import uk.ac.tees.mad.lendabook.presentation.screens.forget.ForgetScreen
 import uk.ac.tees.mad.lendabook.presentation.screens.addbook.AddBookScreen
+import uk.ac.tees.mad.lendabook.presentation.screens.browseBook.browseBookRoute
 import uk.ac.tees.mad.lendabook.presentation.screens.createAccount.CreateAccountScreen
-import uk.ac.tees.mad.lendabook.presentation.screens.home.HomeScreen
+import uk.ac.tees.mad.lendabook.presentation.screens.forget.ForgetScreen
 import uk.ac.tees.mad.lendabook.presentation.screens.login.LoginScreen
+import uk.ac.tees.mad.lendabook.presentation.screens.message.messageRoute
+import uk.ac.tees.mad.lendabook.presentation.screens.setting.settingRoute
 import uk.ac.tees.mad.lendabook.presentation.screens.splash.SplashScreen
 
 @Composable
@@ -18,7 +21,7 @@ fun AppNavGraph() {
 
     NavHost(
         navController = navController,
-        startDestination = AddBookRoute
+        startDestination = DashboardRoute
     ) {
         composable<SplashRoute> {
             SplashScreen()
@@ -35,8 +38,10 @@ fun AppNavGraph() {
             ForgetScreen(navController)
         }
 
-        composable<HomeRoute> {
-            HomeScreen()
+        navigation<DashboardRoute>(startDestination = BrowseBookRoute) {
+            browseBookRoute(navController)
+            messageRoute(navController)
+            settingRoute(navController)
         }
 
         composable<AddBookRoute> {

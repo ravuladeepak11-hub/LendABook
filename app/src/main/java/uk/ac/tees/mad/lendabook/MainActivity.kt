@@ -4,8 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import dagger.hilt.android.AndroidEntryPoint
 import uk.ac.tees.mad.lendabook.presentation.navigation.AppNavGraph
 import uk.ac.tees.mad.lendabook.ui.theme.LendABookTheme
@@ -21,10 +19,4 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun showApp(){
-    AppNavGraph()
 }

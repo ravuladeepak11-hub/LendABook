@@ -107,10 +107,8 @@ class AddBookViewModel @Inject constructor(
         }
     }
 
-
     fun restUiState() {
         _uiState.value = UiState.Idle
     }
-
 
 }

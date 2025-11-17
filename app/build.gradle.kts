@@ -88,4 +88,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
+
+    //Glide For ImageLoading
+    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
+
 }
