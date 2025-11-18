@@ -13,9 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -33,6 +36,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +50,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -55,6 +62,10 @@ import uk.ac.tees.mad.lendabook.domain.model.BookDetail
 import uk.ac.tees.mad.lendabook.presentation.components.scaffold.DashboardScaffold
 import uk.ac.tees.mad.lendabook.presentation.navigation.AddBookRoute
 import uk.ac.tees.mad.lendabook.presentation.navigation.BrowseBookRoute
+import uk.ac.tees.mad.lendabook.presentation.navigation.ForgetRoute
+import uk.ac.tees.mad.lendabook.presentation.navigation.LoginRoute
+import uk.ac.tees.mad.lendabook.presentation.screens.browseBook.SearchSection
+import uk.ac.tees.mad.lendabook.presentation.screens.createAccount.CreateAccountNavigation
 import uk.ac.tees.mad.lendabook.utils.Dimen
 
 fun NavGraphBuilder.browseBookRoute(navController: NavHostController) =
@@ -66,40 +77,50 @@ fun NavGraphBuilder.browseBookRoute(navController: NavHostController) =
 @Composable
 fun BrowseBookScreen(navController: NavHostController) {
 
-    val scope = rememberCoroutineScope()
+    val viewModel: BrowseBookViewModel = hiltViewModel()
 
-    DashboardScaffold(
-        navController = navController,
-        topBar = {
-            TopAppBar(
-                title = { Text("LendABook") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    scope.launch {
-                        navController.navigate(AddBookRoute)
-                    }
-                },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Book")
+    //For Navigation
+    LaunchedEffect(Unit) {
+        viewModel.browseBookNav.collect { navigationEvent ->
+            when (navigationEvent) {
+                BrowseBookNavigation.AddBook -> {
+
+                }
+
+                BrowseBookNavigation.BookDetails -> {
+
+                }
             }
         }
-    ) { paddingValues ->
-        BrowseBookContent(paddingValues)
+    }
+
+    DashboardScaffold(navController = navController, topBar = {
+        TopAppBar(
+            title = { Text("LendABook") }, colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface
+            )
+        )
+    }, floatingActionButton = {
+        FloatingActionButton(
+            onClick = {
+                viewModel.onEvent(BrowseBookUiEvent.AddBookClicked)
+            },
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Add Book")
+        }
+    }) { paddingValues ->
+        BrowseBookContent(paddingValues, viewModel)
     }
 }
 
 
 @Composable
-fun BrowseBookContent(paddingValues: PaddingValues) {
+fun BrowseBookContent(paddingValues: PaddingValues, viewModel: BrowseBookViewModel) {
+
+    val bookList by viewModel.bookList.collectAsState()
 
     Column(
         modifier = Modifier
@@ -112,16 +133,24 @@ fun BrowseBookContent(paddingValues: PaddingValues) {
         Spacer(modifier = Modifier.height(Dimen.SpacerMedium))
         AppFilterChip()
         Spacer(modifier = Modifier.height(Dimen.SpacerMedium))
-        BookGrid(
-            listOf(
-                BookDetail(
-                    coverPhoto = "https://cdn.pixabay.com/photo/2014/08/16/18/17/book-419589_1280.jpg",
-                    bookTitle = "hjkshdf",
-                    authorName = "henry",
-                    condition = "Used"
+        Text(text = "User Upload Books", fontWeight = FontWeight.SemiBold)
+        Spacer(modifier = Modifier.height(Dimen.SpacerSmall))
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(Dimen.SpacerSmall),
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            items(bookList) { book ->
+                BookCard(
+                    bookCover = book.coverPhoto,
+                    bookTitle = book.bookTitle,
+                    bookAuthor = book.authorName,
+                    condition = book.condition,
+                    onClickBook = {
+                        viewModel.onEvent(BrowseBookUiEvent.ViewBookDetailClicked(book.bookISBN))
+                    }
                 )
-            )
-        )
+            }
+        }
     }
 
 }
@@ -154,35 +183,14 @@ fun AppFilterChip(modifier: Modifier = Modifier) {
             label = { Text("New") },
             leadingIcon = if (availableOnly) {
                 { Icon(Icons.Default.Check, contentDescription = null) }
-            } else null
-        )
+            } else null)
         FilterChip(
             selected = donationsOnly,
             onClick = { donationsOnly = !donationsOnly },
             label = { Text("Used") },
             leadingIcon = if (donationsOnly) {
                 { Icon(Icons.Default.Check, contentDescription = null) }
-            } else null
-        )
-    }
-}
-
-@Composable
-fun BookGrid(books: List<BookDetail>) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxHeight()
-    ) {
-        items(books) { book ->
-            BookCard(
-                bookCover = book.coverPhoto,
-                bookTitle = book.bookTitle,
-                bookAuthor = book.authorName,
-                condition = book.condition
-            )
-        }
+            } else null)
     }
 }
 
@@ -194,11 +202,14 @@ fun BookCard(
     bookTitle: String,
     bookAuthor: String,
     condition: String,
+    onClickBook: () -> Unit,
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable { /* Navigate to details */ },
+            .width(160.dp)
+            .clickable {
+                onClickBook()
+            },
         shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -220,18 +231,23 @@ fun BookCard(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .background(Color(0xFF27C29D), RoundedCornerShape(12.dp))
+                        .background(
+                            color = Color(0xFF27C29D),
+                            shape = RoundedCornerShape(12.dp)
+                        )
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        condition,
-                        color = Color.White,
-                        style = MaterialTheme.typography.labelSmall
+                        condition, color = Color.White, style = MaterialTheme.typography.labelSmall
                     )
                 }
             }
             Spacer(Modifier.height(Dimen.SpacerSmall))
-            Text(bookTitle, color = MaterialTheme.colorScheme.background, fontWeight = FontWeight.Bold)
+            Text(
+                bookTitle,
+                color = MaterialTheme.colorScheme.background,
+                fontWeight = FontWeight.Bold
+            )
             Text(bookAuthor, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
         }
     }
