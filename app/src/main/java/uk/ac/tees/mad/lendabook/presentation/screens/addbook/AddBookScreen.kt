@@ -1,7 +1,6 @@
 package uk.ac.tees.mad.lendabook.presentation.screens.addbook
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -50,19 +49,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import uk.ac.tees.mad.lendabook.R
 import uk.ac.tees.mad.lendabook.domain.common.UiState
+import uk.ac.tees.mad.lendabook.presentation.navigation.DashboardRoute
 import uk.ac.tees.mad.lendabook.utils.Dimen
 import uk.ac.tees.mad.lendabook.utils.showToast
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddBookScreen() {
+fun AddBookScreen(navController: NavHostController) {
 
     val viewModel: AddBookViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
@@ -87,13 +90,27 @@ fun AddBookScreen() {
         }
     }
 
+    //Navigation
+    LaunchedEffect(Unit) {
+        viewModel.addBookNav.collect { nav ->
+            when (nav) {
+                AddBookNav.Dashboard -> {
+                    navController.navigate(DashboardRoute)
+                }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Add a New Book") },
+                title = { Text(stringResource(id = R.string.add_new_book)) },
                 navigationIcon = {
                     IconButton(onClick = { /* Handle back */ }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(id = R.string.back)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -109,11 +126,15 @@ fun AddBookScreen() {
 }
 
 @Composable
-fun AddBookContent(paddingValues: PaddingValues, viewModel: AddBookViewModel, uiState: UiState) {
+fun AddBookContent(
+    paddingValues: PaddingValues,
+    viewModel: AddBookViewModel,
+    uiState: UiState,
+) {
 
     val addBookUiState by viewModel.addBookUiState.collectAsState()
-    val categories = listOf("Fiction", "Non-fiction", "Comics", "Biography")
-    val conditions = listOf("New", "Used", "Good", "Fair")
+    val categories = stringArrayResource(id = R.array.book_categories)
+    val conditions = stringArrayResource(id = R.array.book_conditions)
 
     Column(
         modifier = Modifier
@@ -134,9 +155,12 @@ fun AddBookContent(paddingValues: PaddingValues, viewModel: AddBookViewModel, ui
                 contentColor = MaterialTheme.colorScheme.onPrimary
             )
         ) {
-            Icon(Icons.Default.QrCodeScanner, contentDescription = "Scan ISBN")
+            Icon(
+                Icons.Default.QrCodeScanner,
+                contentDescription = stringResource(id = R.string.scan_isbn)
+            )
             Spacer(Modifier.width(Dimen.SpacerSmall))
-            Text("Scan ISBN")
+            Text(stringResource(id = R.string.scan_isbn))
         }
 
         Spacer(modifier = Modifier.height(Dimen.SpacerMedium))
@@ -149,13 +173,13 @@ fun AddBookContent(paddingValues: PaddingValues, viewModel: AddBookViewModel, ui
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Book Cover",
+                text = stringResource(id = R.string.book_cover),
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.labelLarge
             )
             Spacer(Modifier.height(Dimen.SpacerSmall))
             Text(
-                text = "Tap the button below to add a cover image.",
+                text = stringResource(id = R.string.add_cover_image_prompt),
                 color = Color.Gray
             )
             Spacer(Modifier.height(Dimen.SpacerMedium))
@@ -163,9 +187,12 @@ fun AddBookContent(paddingValues: PaddingValues, viewModel: AddBookViewModel, ui
                 onClick = { /* Capture cover */ },
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
             ) {
-                Icon(Icons.Default.PhotoCamera, contentDescription = "Capture Cover")
+                Icon(
+                    Icons.Default.PhotoCamera,
+                    contentDescription = stringResource(id = R.string.capture_cover)
+                )
                 Spacer(Modifier.width(6.dp))
-                Text("Capture Cover")
+                Text(stringResource(id = R.string.capture_cover))
             }
         }
         Spacer(modifier = Modifier.height(Dimen.SpacerMedium))
@@ -178,22 +205,22 @@ fun AddBookContent(paddingValues: PaddingValues, viewModel: AddBookViewModel, ui
                 onValueChange = {
                     viewModel.onEvent(AddBookUiEvent.TitleChanged(it))
                 },
-                label = { Text("Enter book title") },
+                label = { Text(stringResource(id = R.string.enter_book_title)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
             OutlinedTextField(
                 value = addBookUiState.authorName,
                 onValueChange = { viewModel.onEvent(AddBookUiEvent.AuthorChange(it)) },
-                label = { Text("Enter author's name") },
+                label = { Text(stringResource(id = R.string.enter_author_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
 
             DropdownSelector(
-                label = "Category",
+                label = stringResource(id = R.string.category),
                 selectedValue = addBookUiState.category,
-                options = categories
+                options = categories.toList()
             ) {
                 viewModel.onEvent(
                     AddBookUiEvent.CategoryChanged(it)
@@ -201,9 +228,9 @@ fun AddBookContent(paddingValues: PaddingValues, viewModel: AddBookViewModel, ui
             }
 
             DropdownSelector(
-                label = "Condition",
+                label = stringResource(id = R.string.condition),
                 selectedValue = addBookUiState.condition,
-                options = conditions
+                options = conditions.toList()
             ) {
                 viewModel.onEvent(
                     AddBookUiEvent.ConditionChanged(it)
@@ -214,7 +241,7 @@ fun AddBookContent(paddingValues: PaddingValues, viewModel: AddBookViewModel, ui
                 OutlinedTextField(
                     value = addBookUiState.postalCode,
                     onValueChange = { viewModel.onEvent(AddBookUiEvent.PostCodeChanged(it)) },
-                    label = { Text("Postcode") },
+                    label = { Text(stringResource(id = R.string.postcode)) },
                     modifier = Modifier.weight(1f),
                     singleLine = true
                 )
@@ -223,7 +250,7 @@ fun AddBookContent(paddingValues: PaddingValues, viewModel: AddBookViewModel, ui
                     onValueChange = { viewModel.onEvent(AddBookUiEvent.ISBNChanged(it)) },
                     label = {
                         Text(
-                            "ISBN",
+                            stringResource(id = R.string.isbn),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -234,10 +261,12 @@ fun AddBookContent(paddingValues: PaddingValues, viewModel: AddBookViewModel, ui
             }
         }
         Spacer(modifier = Modifier.height(Dimen.SpacerMedium))
+
         //Upload Book Button
         Button(
             onClick = {
                 viewModel.onEvent(AddBookUiEvent.UploadBookClicked)
+
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
@@ -255,7 +284,7 @@ fun AddBookContent(paddingValues: PaddingValues, viewModel: AddBookViewModel, ui
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text(text = stringResource(R.string.create_account))
+                    Text(text = stringResource(R.string.upload_book))
                 }
             }
         }
@@ -305,3 +334,80 @@ fun DropdownSelector(
 
 
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, name = "Add Book Screen - LendABook")
+@Composable
+fun AddBookScreenPreview() {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Add New Book") },
+                navigationIcon = {
+                    IconButton(onClick = {}) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.surface
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            Button(
+                onClick = {},
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Icon(Icons.Default.QrCodeScanner, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Scan ISBN")
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
+                    .padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Book Cover", style = MaterialTheme.typography.labelLarge)
+                Spacer(Modifier.height(8.dp))
+                Text("Add a clear photo of your book cover", color = Color.Gray)
+                Spacer(Modifier.height(16.dp))
+                OutlinedButton(onClick = {}, border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)) {
+                    Icon(Icons.Default.PhotoCamera, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Capture Cover")
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(value = "The Psychology of Money", onValueChange = {}, label = { Text("Book Title") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+                OutlinedTextField(value = "Morgan Housel", onValueChange = {}, label = { Text("Author Name") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+
+                DropdownSelector(label = "Category", selectedValue = "Self-Help", options = listOf("Fiction", "Non-Fiction", "Self-Help", "Science", "Biography")) {}
+                DropdownSelector(label = "Condition", selectedValue = "Like New", options = listOf("Like New", "Very Good", "Good", "Fair", "Poor")) {}
+
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(value = "TS1 3BX", onValueChange = {}, label = { Text("Postcode") }, modifier = Modifier.weight(1f))
+                    OutlinedTextField(value = "978-0857197689", onValueChange = {}, label = { Text("ISBN") }, modifier = Modifier.weight(1f))
+                }
+            }
+
+            Button(
+                onClick = {},
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text("Upload Book")
+            }
+        }
+    }
+}

@@ -10,3 +10,8 @@ sealed class AddBookUiEvent {
     data class ISBNChanged(val isbn: String) : AddBookUiEvent()
     object UploadBookClicked : AddBookUiEvent()
 }
+
+
+enum class AddBookNav{
+    Dashboard
+}

@@ -12,9 +12,13 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import uk.ac.tees.mad.lendabook.R
 import uk.ac.tees.mad.lendabook.presentation.components.scaffold.DashboardScaffold
 import uk.ac.tees.mad.lendabook.presentation.navigation.MessageRoute
 import uk.ac.tees.mad.lendabook.presentation.navigation.SettingRoute
@@ -31,7 +35,7 @@ fun SettingScreen(navController: NavHostController) {
         navController = navController,
         topBar = {
             TopAppBar(
-                title = { Text("Setting") },
+                title = { Text(stringResource(id = R.string.setting)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
@@ -46,4 +50,12 @@ fun SettingScreen(navController: NavHostController) {
 @Composable
 fun SettingContent(paddingValues: PaddingValues) {
 
+}
+
+
+@Preview
+@Composable
+fun setting(){
+    val nav = rememberNavController()
+    SettingScreen(nav)
 }

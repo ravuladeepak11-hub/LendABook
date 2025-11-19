@@ -35,4 +35,40 @@
     <string name="success_login">Successfully to login</string>
     <string name="success_create_account">Successfully to create account</string>
 
+    <!-- Browse Book Screen -->
+    <string name="lendabook">LendABook</string>
+    <string name="add_book">Add Book</string>
+    <string name="user_upload_books">User Upload Books</string>
+    <string name="search_placeholder">title, author, genre..</string>
+    <string name="filter_new">New</string>
+    <string name="filter_used">Used</string>
+
+    <!-- Login Screen -->
+    <string name="welcome_back">Welcome Back!</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+
+    <!-- Create Account Screen -->
+    <string name="join_lendabook">Join LendABook</string>
+
+    <!-- Message Screen -->
+    <string name="message">Message</string>
+
+    <!-- Add Book Screen -->
+    <string name="add_new_book">Add a New Book</string>
+    <string name="back">Back</string>
+    <string name="scan_isbn">Scan ISBN</string>
+    <string name="book_cover">Book Cover</string>
+    <string name="add_cover_image_prompt">Tap the button below to add a cover image.</string>
+    <string name="capture_cover">Capture Cover</string>
+    <string name="enter_book_title">Enter book title</string>
+    <string name="enter_author_name">Enter author\'s name</string>
+    <string name="category">Category</string>
+    <string name="condition">Condition</string>
+    <string name="postcode">Postcode</string>
+    <string name="isbn">ISBN</string>
+    <string name="upload_book">Upload Book</string>
+
+    <!-- Setting Screen -->
+    <string name="setting">Setting</string>
+
 </resources>

@@ -45,7 +45,7 @@ fun AppNavGraph() {
         }
 
         composable<AddBookRoute> {
-            AddBookScreen()
+            AddBookScreen(navController)
         }
     }
 

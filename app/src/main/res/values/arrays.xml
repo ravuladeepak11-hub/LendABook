@@ -1,0 +1,14 @@
+<resources>
+    <string-array name="book_categories">
+        <item>Fiction</item>
+        <item>Non-fiction</item>
+        <item>Comics</item>
+        <item>Biography</item>
+    </string-array>
+    <string-array name="book_conditions">
+        <item>New</item>
+        <item>Used</item>
+        <item>Good</item>
+        <item>Fair</item>
+    </string-array>
+</resources>

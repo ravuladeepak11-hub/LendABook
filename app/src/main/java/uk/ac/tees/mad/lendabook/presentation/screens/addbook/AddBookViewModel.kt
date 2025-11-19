@@ -3,8 +3,10 @@ package uk.ac.tees.mad.lendabook.presentation.screens.addbook
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -25,6 +27,9 @@ class AddBookViewModel @Inject constructor(
 
     private val _addBookUiState = MutableStateFlow(AddBookUiState())
     val addBookUiState = _addBookUiState.asStateFlow()
+
+    private val _addBookNav = MutableSharedFlow<AddBookNav>()
+    val addBookNav = _addBookNav.asSharedFlow()
 
     fun onEvent(event: AddBookUiEvent) {
         when (event) {
@@ -101,6 +106,7 @@ class AddBookViewModel @Inject constructor(
                 )
             ).onSuccess {
                 _uiState.value = UiState.Success("Saved Book Successfully!")
+                _addBookNav.emit(AddBookNav.Dashboard)
             }.onFailure {
                 _uiState.value = UiState.Error(it.localizedMessage ?: "Upload Book Failed!")
             }

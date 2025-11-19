@@ -26,14 +26,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import uk.ac.tees.mad.lendabook.R
 import uk.ac.tees.mad.lendabook.domain.common.UiState
 import uk.ac.tees.mad.lendabook.presentation.components.AppTitleText
 import uk.ac.tees.mad.lendabook.presentation.components.textfields.EmailTextField
 import uk.ac.tees.mad.lendabook.presentation.navigation.LoginRoute
+import uk.ac.tees.mad.lendabook.presentation.screens.setting.SettingScreen
 import uk.ac.tees.mad.lendabook.utils.Dimen
 import uk.ac.tees.mad.lendabook.utils.showToast
 
@@ -139,4 +142,11 @@ fun ForgetContent(viewModel: ForgetViewModel, uiState: UiState) {
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun setting(){
+    val nav = rememberNavController()
+    ForgetScreen(nav)
 }

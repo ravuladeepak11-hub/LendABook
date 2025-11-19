@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -27,9 +28,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import uk.ac.tees.mad.lendabook.R
 import uk.ac.tees.mad.lendabook.domain.common.UiState
 import uk.ac.tees.mad.lendabook.presentation.components.AppIcon
@@ -122,7 +126,7 @@ fun LoginContent(viewModel: LoginViewModel, uiState: UiState) {
         Spacer(modifier = Modifier.height(Dimen.SpacerExtraLarge))
         Column() {
             AppTitleText(
-                title = "Welcome Back!"
+                title = stringResource(id = R.string.welcome_back)
             )
             Spacer(modifier = Modifier.height(Dimen.SpacerMedium))
             EmailTextField(
@@ -171,7 +175,7 @@ fun LoginContent(viewModel: LoginViewModel, uiState: UiState) {
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "Don't have an account?")
+                Text(text = stringResource(id = R.string.dont_have_account))
             }
             Button(
                 onClick = {},
@@ -184,5 +188,91 @@ fun LoginContent(viewModel: LoginViewModel, uiState: UiState) {
             Spacer(modifier = Modifier.height(Dimen.SpacerMedium))
         }
 
+    }
+}
+
+@Preview(showBackground = true, name = "Login Screen - LendABook")
+@Composable
+fun LoginScreenPreview() {
+    val gradientBackground = listOf(
+        MaterialTheme.colorScheme.surface,
+        MaterialTheme.colorScheme.background
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Brush.linearGradient(gradientBackground))
+    ) {
+        Column(
+            modifier = Modifier
+                .statusBarsPadding()
+                .padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // App Icon placeholder
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("📚", style = MaterialTheme.typography.displayMedium)
+            }
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            Text(
+                text = "Welcome Back!",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            EmailTextField(
+                value = "john.doe@example.com",
+                onValueChange = {},
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            PasswordTextField(
+                value = "••••••••",
+                onValueChange = {},
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {},
+                modifier = Modifier.fillMaxWidth().height(56.dp)
+            ) {
+                Text("Login", style = MaterialTheme.typography.titleMedium)
+            }
+
+            Spacer(modifier = Modifier.weight(1f, true))
+
+            Text(
+                text = "Don't have an account?",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = {},
+                modifier = Modifier.fillMaxWidth().height(48.dp)
+            ) {
+                Text("Create Account")
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }
