@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import uk.ac.tees.mad.lendabook.presentation.screens.addbook.AddBookScreen
+import uk.ac.tees.mad.lendabook.presentation.screens.bookDetail.BookDetailScreen
 import uk.ac.tees.mad.lendabook.presentation.screens.browseBook.browseBookRoute
 import uk.ac.tees.mad.lendabook.presentation.screens.createAccount.CreateAccountScreen
 import uk.ac.tees.mad.lendabook.presentation.screens.forget.ForgetScreen
@@ -46,6 +47,10 @@ fun AppNavGraph() {
 
         composable<AddBookRoute> {
             AddBookScreen(navController)
+        }
+
+        composable<BookDetailRoute> {
+            BookDetailScreen(navController)
         }
     }
 

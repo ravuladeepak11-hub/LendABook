@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import okhttp3.internal.notifyAll
 import uk.ac.tees.mad.lendabook.data.model.BookDoc
 import uk.ac.tees.mad.lendabook.domain.common.UiState
 import uk.ac.tees.mad.lendabook.domain.model.BookDetail
@@ -45,6 +46,8 @@ class BrowseBookViewModel @Inject constructor(
                 _browseBookUiState.update {
                     it.copy(query = event.query)
                 }
+                Log.d("TAG", "onEvent:${event.query} ")
+                getApiBooks(event.query)
             }
 
             is BrowseBookUiEvent.FilterChanged -> {
@@ -70,7 +73,7 @@ class BrowseBookViewModel @Inject constructor(
 
     init {
         getBooks(null)
-        getApiBooks()
+        getApiBooks(null)
     }
 
     fun getBooks(filter: String?) {
@@ -86,16 +89,16 @@ class BrowseBookViewModel @Inject constructor(
         }
     }
 
-    fun getApiBooks() {
+    fun getApiBooks(query: String?) {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
             apiBookRepo.search(
-                query = "the lord of the rings",
+                query = query ?: "the lord of the rings",
                 searchByAuthor = false
             ).onSuccess { bookDocs ->
-                Log.d("TAG", "getApiBooks: $bookDocs")
                 _bookDocList.value = bookDocs
             }
         }
     }
+
 }

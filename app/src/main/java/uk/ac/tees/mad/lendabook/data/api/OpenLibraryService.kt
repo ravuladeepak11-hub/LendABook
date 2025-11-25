@@ -2,6 +2,7 @@ package uk.ac.tees.mad.lendabook.data.api
 
 import retrofit2.http.GET
 import retrofit2.http.Query
+import uk.ac.tees.mad.lendabook.data.model.BookMetadata
 import uk.ac.tees.mad.lendabook.data.model.OpenLibraryResponse
 
 interface OpenLibraryService {
@@ -11,4 +12,9 @@ interface OpenLibraryService {
         @Query("author") author: String? = null,
         @Query("page") page: Int = 1,
     ): OpenLibraryResponse
+
+    @GET("api/books?format=json&jscmd=data")
+    suspend fun fetchBooksByKeys(
+        @Query("bibkeys") bibKeys: String
+    ): Map<String, BookMetadata>
 }

@@ -31,3 +31,7 @@ object MessageRoute
 
 @Serializable
 object SettingRoute
+
+
+@Serializable
+object BookDetailRoute

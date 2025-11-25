@@ -13,7 +13,7 @@ data class BookDoc(
     @SerializedName("author_name") val authorName: List<String>? = null,
     @SerializedName("first_publish_year") val firstPublishYear: Int? = null,
     @SerializedName("cover_i") val coverId: Int? = null,
-    @SerializedName("isbn") val isbns: List<String>? = null,
+    @SerializedName("ia") val isbns: List<String>? = null,
     @SerializedName("key") val key: String? = null
 ) {
     fun coverUrl(size: String = "M"): String? {

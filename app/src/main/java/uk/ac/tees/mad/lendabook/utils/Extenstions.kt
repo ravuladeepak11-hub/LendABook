@@ -7,3 +7,7 @@ import android.widget.Toast
 fun Context.showToast(message: String) {
     Toast.makeText(this, message.ifEmpty { "Unknown Message" }, Toast.LENGTH_SHORT).show()
 }
+
+fun buildCoverUrl(idType: String, id: String, size: String = "M"): String {
+    return "https://covers.openlibrary.org/b/$idType/$id-$size.jpg"
+}

@@ -52,7 +52,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -334,80 +333,3 @@ fun DropdownSelector(
 
 
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "Add Book Screen - LendABook")
-@Composable
-fun AddBookScreenPreview() {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Add New Book") },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.surface
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            Button(
-                onClick = {},
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Icon(Icons.Default.QrCodeScanner, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("Scan ISBN")
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
-                    .padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Book Cover", style = MaterialTheme.typography.labelLarge)
-                Spacer(Modifier.height(8.dp))
-                Text("Add a clear photo of your book cover", color = Color.Gray)
-                Spacer(Modifier.height(16.dp))
-                OutlinedButton(onClick = {}, border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)) {
-                    Icon(Icons.Default.PhotoCamera, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Capture Cover")
-                }
-            }
-
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(value = "The Psychology of Money", onValueChange = {}, label = { Text("Book Title") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-                OutlinedTextField(value = "Morgan Housel", onValueChange = {}, label = { Text("Author Name") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-
-                DropdownSelector(label = "Category", selectedValue = "Self-Help", options = listOf("Fiction", "Non-Fiction", "Self-Help", "Science", "Biography")) {}
-                DropdownSelector(label = "Condition", selectedValue = "Like New", options = listOf("Like New", "Very Good", "Good", "Fair", "Poor")) {}
-
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(value = "TS1 3BX", onValueChange = {}, label = { Text("Postcode") }, modifier = Modifier.weight(1f))
-                    OutlinedTextField(value = "978-0857197689", onValueChange = {}, label = { Text("ISBN") }, modifier = Modifier.weight(1f))
-                }
-            }
-
-            Button(
-                onClick = {},
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text("Upload Book")
-            }
-        }
-    }
-}

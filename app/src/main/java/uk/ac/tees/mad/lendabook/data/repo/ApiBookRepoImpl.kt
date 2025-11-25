@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import uk.ac.tees.mad.lendabook.data.api.OpenLibraryService
 import uk.ac.tees.mad.lendabook.data.model.BookDoc
+import uk.ac.tees.mad.lendabook.data.model.BookMetadata
 import uk.ac.tees.mad.lendabook.domain.repo.ApiBookRepo
 import javax.inject.Inject
 
@@ -27,6 +28,17 @@ class ApiBookRepoImpl @Inject constructor(
             }
         } catch (t: Throwable) {
             Result.failure(t)
+        }
+    }
+
+    override suspend fun fetchBookByIsbn(isbn: String): Result<BookMetadata?> {
+        val key = "ISBN:$isbn"
+        return try {
+            val map = service.fetchBooksByKeys(key)
+            val result = map[key]
+            Result.success(result)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

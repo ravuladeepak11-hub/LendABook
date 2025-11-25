@@ -22,6 +22,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -50,26 +52,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import kotlinx.coroutines.launch
 import uk.ac.tees.mad.lendabook.R
-import uk.ac.tees.mad.lendabook.data.model.BookDoc
 import uk.ac.tees.mad.lendabook.domain.model.BookDetail
 import uk.ac.tees.mad.lendabook.presentation.components.AppFilterChip
 import uk.ac.tees.mad.lendabook.presentation.components.scaffold.DashboardScaffold
 import uk.ac.tees.mad.lendabook.presentation.navigation.AddBookRoute
+import uk.ac.tees.mad.lendabook.presentation.navigation.BookDetailRoute
 import uk.ac.tees.mad.lendabook.presentation.navigation.BrowseBookRoute
 import uk.ac.tees.mad.lendabook.presentation.navigation.ForgetRoute
 import uk.ac.tees.mad.lendabook.presentation.navigation.LoginRoute
@@ -97,7 +101,7 @@ fun BrowseBookScreen(navController: NavHostController) {
                 }
 
                 BrowseBookNavigation.BookDetails -> {
-
+                    navController.navigate(BookDetailRoute)
                 }
             }
         }
@@ -144,7 +148,47 @@ fun BrowseBookContent(paddingValues: PaddingValues, viewModel: BrowseBookViewMod
     ) {
         // Search section
         item {
-            SearchSection()
+            SearchSection(
+                query = browseBookUiState.query,
+                onQueryChanged = {
+                    viewModel.onEvent(BrowseBookUiEvent.QueryChanged(it))
+                }
+            )
+        }
+
+        // API Books Section
+        if (apiBookDocs.isNotEmpty()) {
+            item {
+                Text(
+                    text = "API Books",
+                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(Dimen.SpacerSmall))
+            }
+
+            item {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(Dimen.SpacerSmall)
+                ) {
+                    items(apiBookDocs) { book ->
+                        Log.d("TAG", "BrowseBookContent: ${book.isbns}")
+                        BookCard(
+                            bookCover = book.coverUrl() ?: "https://images.pexels.com/photos/46274/pexels-photo-46274.jpeg",
+                            bookTitle = book.title ?: "Unknown Title",
+                            bookAuthor = book.authorsAsString(),
+                            condition = book.firstPublishYear?.toString() ?: "N/A",
+                            onClickBook = {
+                                book.isbns?.map { isbn ->
+                                    viewModel.onEvent(
+                                        BrowseBookUiEvent.ViewBookDetailClicked(isbn)
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
+            }
         }
 
         // Condition chips
@@ -188,53 +232,35 @@ fun BrowseBookContent(paddingValues: PaddingValues, viewModel: BrowseBookViewMod
             }
         }
 
-        // API Books Section
-        if (apiBookDocs.isNotEmpty()) {
-            item {
-                Text(
-                    text = "API Books",
-                    fontWeight = FontWeight.SemiBold,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(Dimen.SpacerSmall))
-            }
 
-            item {
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(Dimen.SpacerSmall)
-                ) {
-                    items(apiBookDocs) { book ->
-                        BookCard(
-                            bookCover = book.coverUrl()
-                                ?: "https://images.pexels.com/photos/46274/pexels-photo-46274.jpeg",
-                            bookTitle = book.title ?: "Unknown Title",
-                            bookAuthor = book.authorsAsString(),
-                            condition = book.firstPublishYear?.toString() ?: "N/A",
-                            onClickBook = {
-                                viewModel.onEvent(
-                                    BrowseBookUiEvent.ViewBookDetailClicked(book.isbns.toString())
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-        }
     }
 }
 
 @Composable
-fun SearchSection() {
-    var query by remember { mutableStateOf("") }
+fun SearchSection(
+    query: String,
+    onQueryChanged: (query: String) -> Unit,
+) {
+    val focusManager = LocalFocusManager.current
+
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedTextField(
             value = query,
-            onValueChange = { query = it },
+            onValueChange = { onQueryChanged(it) },
             maxLines = 1,
             placeholder = { Text(stringResource(id = R.string.search_placeholder)) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(50)
+            shape = RoundedCornerShape(50),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    focusManager.clearFocus()
+                }
+            )
         )
 
     }
@@ -315,117 +341,17 @@ fun BookCard(
             Text(
                 bookTitle,
                 color = MaterialTheme.colorScheme.background,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
-            Text(bookAuthor, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-        }
-    }
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "Browse Book Screen - LendABook")
-@Composable
-fun BrowseBookScreenPreview() {
-    val sampleUserBooks = listOf(
-        BookDetail(
-            bookTitle = "The Great Gatsby",
-            authorName = "F. Scott Fitzgerald",
-            condition = "Like New",
-            coverPhoto = "https://images.pexels.com/photos/46274/pexels-photo-46274.jpeg?w=800"
-        ),
-        BookDetail(
-            bookTitle = "1984",
-            authorName = "George Orwell",
-            condition = "Good",
-            coverPhoto = "https://images.pexels.com/photos/267885/pexels-photo-267885.jpeg?w=800"
-        ),
-        BookDetail(
-            bookTitle = "To Kill a Mockingbird",
-            authorName = "Harper Lee",
-            condition = "Fair",
-            coverPhoto = "https://images.pexels.com/photos/374722/pexels-photo-374722.jpeg?w=800"
-        )
-    )
-
-    val sampleApiBooks = listOf(
-        BookDoc(
-            title = "Pride and Prejudice",
-            firstPublishYear = 1813,
-            isbns = listOf("9780141439518")
-        ),
-        BookDoc(
-            title = "The Catcher in the Rye",
-            firstPublishYear = 1951,
-            isbns = listOf("9780316769488")
-        )
-    )
-
-    DashboardScaffold(
-        navController = rememberNavController(),
-        topBar = {
-            TopAppBar(
-                title = { Text("LendABook") },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+            Text(
+                bookAuthor,
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.Gray,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {},
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Book")
-            }
-        }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item { SearchSection() }
-
-            item {
-                ConditionChips(
-                    conditions = listOf("All", "Like New", "Good", "Fair", "Poor"),
-                    selectedCondition = "All",
-                    onClick = {}
-                )
-            }
-
-            item {
-                Text("User Uploaded Books", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(8.dp))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(sampleUserBooks) { book ->
-                        BookCard(
-                            bookCover = book.coverPhoto,
-                            bookTitle = book.bookTitle,
-                            bookAuthor = book.authorName,
-                            condition = book.condition,
-                            onClickBook = {}
-                        )
-                    }
-                }
-            }
-
-            item {
-                Text("API Books", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(8.dp))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(sampleApiBooks) { book ->
-                        BookCard(
-                            bookCover = book.coverUrl() ?: "https://images.pexels.com/photos/46274/pexels-photo-46274.jpeg",
-                            bookTitle = book.title ?: "Unknown",
-                            bookAuthor = book.authorsAsString(),
-                            condition = book.firstPublishYear?.toString() ?: "N/A",
-                            onClickBook = {}
-                        )
-                    }
-                }
-            }
         }
     }
 }
