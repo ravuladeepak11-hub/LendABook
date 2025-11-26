@@ -468,7 +468,6 @@ fun AlertDialogBox(
     email: String? = null,
     confirmButtonColor: ButtonColors = ButtonDefaults.buttonColors(),
     dismissButtonColor: ButtonColors = ButtonDefaults.buttonColors(),
-
     ) {
     AlertDialog(
         icon = {
