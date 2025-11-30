@@ -1,10 +1,8 @@
 package uk.ac.tees.mad.lendabook.presentation.screens.setting
 
 import android.widget.Toast
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,13 +14,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -39,6 +37,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,25 +52,70 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import uk.ac.tees.mad.lendabook.R
+import uk.ac.tees.mad.lendabook.domain.common.UiState
 import uk.ac.tees.mad.lendabook.presentation.components.scaffold.DashboardScaffold
-import uk.ac.tees.mad.lendabook.presentation.navigation.MessageRoute
+import uk.ac.tees.mad.lendabook.presentation.navigation.CreateAccountRoute
+import uk.ac.tees.mad.lendabook.presentation.navigation.LoginRoute
 import uk.ac.tees.mad.lendabook.presentation.navigation.SettingRoute
+import uk.ac.tees.mad.lendabook.utils.showToast
 
 fun NavGraphBuilder.settingRoute(navController: NavHostController) = composable<SettingRoute>() {
     SettingScreen(navController)
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingScreen(navController: NavHostController) {
+
+    val viewModel: SettingViewModel = hiltViewModel()
+
+    val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(uiState) {
+        when (uiState) {
+            is UiState.Success -> {
+                val successMessage = (uiState as UiState.Success).message
+                context.showToast(successMessage)
+            }
+
+            is UiState.Error -> {
+                val errorMessage = (uiState as UiState.Error).message
+                context.showToast(errorMessage)
+            }
+
+            else -> Unit
+        }
+    }
+
+
+    LaunchedEffect(Unit) {
+        viewModel.navigation.collect { destination ->
+            when (destination) {
+
+                SettingNavigation.SIGN_OUT -> {
+                    navController.navigate(LoginRoute)
+                    viewModel.resetUiState()
+                }
+
+                SettingNavigation.DELETE_ACCOUNT -> {
+                    navController.navigate(CreateAccountRoute)
+                    viewModel.resetUiState()
+                }
+            }
+        }
+    }
+
     DashboardScaffold(
         navController = navController,
         topBar = {
@@ -83,14 +128,15 @@ fun SettingScreen(navController: NavHostController) {
             )
         }
     ) { paddingValues ->
-        SettingContent(paddingValues)
+        SettingContent(paddingValues, viewModel)
     }
 }
 
 @Composable
-fun SettingContent(paddingValues: PaddingValues) {
+fun SettingContent(paddingValues: PaddingValues, viewModel: SettingViewModel) {
 
-    val context  = LocalContext.current
+    val context = LocalContext.current
+    val user by viewModel.user.collectAsState()
 
     Column(
         modifier = Modifier
@@ -102,9 +148,9 @@ fun SettingContent(paddingValues: PaddingValues) {
         Spacer(modifier = Modifier.height(12.dp))
 
         SettingProfileComp(
-            name = "",
-            email = "",
-            image = ""
+            name = user?.name ?: "N/A",
+            email = user?.email ?: "N/A",
+            image = "https://www.shareicon.net/data/128x128/2016/09/15/829466_man_512x512.png"
         )
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -221,7 +267,7 @@ fun SettingContent(paddingValues: PaddingValues) {
                         dialogTitle = "Help & Feedback",
                         dialogText = "For feature requests, or feedback, please email us below. We're here to help!",
                         icon = R.drawable.email_icon,
-                        email = "dipuguide@gmail.com"
+                        email = "dipu@gmail.com"
                     )
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = .2f))
@@ -243,12 +289,12 @@ fun SettingContent(paddingValues: PaddingValues) {
                             signOut = false
                         },
                         onConfirmation = {
-                           // settingViewModel.onEvent(SettingEvent.SignOutClick)
+                         viewModel.onEvent(SettingUiEvent.SignOutClick)
                             signOut = false
                         },
                         dialogTitle = "Sign Out?",
                         dialogText = "You can safely sign out. Your data is securely saved in the cloud, ensuring it's available whenever you sign in.",
-                        email = "userDetail.email",
+                        email = user?.email ?: "N/A",
                         icon = R.drawable.sign_out_icon,
                         confirmButtonColor = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error,
@@ -301,12 +347,12 @@ fun SettingContent(paddingValues: PaddingValues) {
                     isDeleteAccount = false
                 },
                 onConfirmation = {
-                    //settingViewModel.onEvent(SettingEvent.DeleteAccountClick)
+                    viewModel.onEvent(SettingUiEvent.DeleteAccountClick)
                     isDeleteAccount = false
                 },
                 dialogTitle = "Deleted Account?",
                 dialogText = "Your account and data will be permanently deleted. You can create a new account anytime with the same email.",
-                email = "userDetail.email",
+                email = user?.email ?: "N/A",
                 icon = R.drawable.delete_icon,
                 confirmButtonColor = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.error,
@@ -328,7 +374,6 @@ fun SettingContent(paddingValues: PaddingValues) {
         }
     }
 }
-
 
 
 @OptIn(ExperimentalGlideComposeApi::class)
@@ -383,7 +428,7 @@ fun SettingCardComp(
     title: String,
     onClick: () -> Unit,
     textColor: Color = MaterialTheme.colorScheme.onSurface,
-    iconColor : Color = MaterialTheme.colorScheme.onSurface
+    iconColor: Color = MaterialTheme.colorScheme.onSurface,
 ) {
     Row(
         modifier = Modifier
@@ -468,7 +513,7 @@ fun AlertDialogBox(
     email: String? = null,
     confirmButtonColor: ButtonColors = ButtonDefaults.buttonColors(),
     dismissButtonColor: ButtonColors = ButtonDefaults.buttonColors(),
-    ) {
+) {
     AlertDialog(
         icon = {
             Icon(
@@ -537,4 +582,120 @@ fun AlertDialogBox(
             }
         }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, name = "LendABook – Settings Screen")
+@Composable
+fun SettingScreenPreview() {
+    DashboardScaffold(
+        navController = rememberNavController(),
+        topBar = {
+            TopAppBar(
+                title = { Text("Settings") },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+        ) {
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Profile Section
+            SettingProfileComp(
+                name = "Sarah Johnson",
+                email = "sarah.j@example.com",
+                image = "https://www.shareicon.net/data/512x512/2016/09/15/829466_man_512x512.png"
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Switches Section
+            Surface(shape = MaterialTheme.shapes.medium, tonalElevation = 2.dp) {
+                Column {
+                    SettingSwitchCard(
+                        iconFilled = R.drawable.dark_mode_icon,
+                        iconOutline = R.drawable.light_mode_icone,
+                        title = "Dark Mode",
+                        checked = true,
+                        onCheckedChange = {}
+                    )
+                    HorizontalDivider()
+                    SettingSwitchCard(
+                        iconFilled = R.drawable.notification_filled_icon,
+                        iconOutline = R.drawable.notification_icon,
+                        title = "Notification",
+                        checked = false,
+                        onCheckedChange = {}
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Menu Items Section
+            Surface(shape = MaterialTheme.shapes.medium, tonalElevation = 2.dp) {
+                Column {
+                    SettingCardComp(icon = R.drawable.check_update, title = "Check for update", onClick = {})
+                    HorizontalDivider()
+                    SettingCardComp(icon = R.drawable.feedback_icon, title = "Rate", onClick = {})
+                    HorizontalDivider()
+                    SettingCardComp(icon = R.drawable.privacy_icon, title = "Privacy", onClick = {})
+                    HorizontalDivider()
+                    SettingCardComp(icon = R.drawable.guide_user_icon, title = "User Guide", onClick = {})
+                    HorizontalDivider()
+                    SettingCardComp(icon = R.drawable.email_icon, title = "Help & Feedback", onClick = {})
+                    HorizontalDivider()
+                    SettingCardComp(
+                        icon = R.drawable.sign_out_icon,
+                        title = "Sign Out",
+                        onClick = {},
+                        textColor = MaterialTheme.colorScheme.error,
+                        iconColor = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Delete Account Button
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.error, MaterialTheme.shapes.small)
+                    .clickable { }
+                    .padding(12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "Delete Account & Data",
+                        color = MaterialTheme.colorScheme.onError,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Icon(
+                        painter = painterResource(R.drawable.delete_icon),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onError,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text(
+                    "Version 1.0.0",
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                )
+            }
+        }
+    }
 }

@@ -55,6 +55,12 @@ class LoginViewModel @Inject constructor(
             LoginUiEvent.LoginClicked -> {
                 login()
             }
+
+           LoginUiEvent.CreateClicked -> {
+               viewModelScope.launch {
+                   _loginNavigation.emit(LoginNavigation.CreateAccount)
+               }
+           }
         }
     }
 

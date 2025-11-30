@@ -59,12 +59,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import kotlinx.coroutines.launch
@@ -355,3 +357,155 @@ fun BookCard(
         }
     }
 }
+
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, name = "LendABook – Browse Books (Full Preview)")
+@Composable
+fun BrowseBookScreenPreview() {
+    val sampleApiBooks = listOf(
+        BookDoc(
+            title = "The Great Gatsby",
+            authors = listOf("F. Scott Fitzgerald"),
+            firstPublishYear = 1925,
+            isbns = listOf("9780743273565")
+        ),
+        BookDoc(
+            title = "To Kill a Mockingbird",
+            authors = listOf("Harper Lee"),
+            firstPublishYear = 1960,
+            isbns = listOf("9780446310789")
+        ),
+        BookDoc(
+            title = "1984",
+            authors = listOf("George Orwell"),
+            firstPublishYear = 1949,
+            isbns = listOf("9780451524935")
+        )
+    )
+
+    val sampleUserBooks = listOf(
+        BookDetail(
+            bookTitle = "Clean Code",
+            authorName = "Robert C. Martin",
+            condition = "Like New",
+            coverPhoto = "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800"
+        ),
+        BookDetail(
+            bookTitle = "Atomic Habits",
+            authorName = "James Clear",
+            condition = "Very Good",
+            coverPhoto = "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=800"
+        )
+    )
+
+    DashboardScaffold(
+        navController = rememberNavController(),
+        topBar = {
+            TopAppBar(
+                title = { Text("LendABook") },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {},
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Book")
+            }
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Search Section
+            item {
+                var query by remember { mutableStateOf("") }
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    placeholder = { Text("Search books...") },
+                    leadingIcon = { Icon(Icons.Default.Search, null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(50),
+                    singleLine = true
+                )
+            }
+
+            // API Books Section
+            item {
+                Text("Discover Books", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(sampleApiBooks) { book ->
+                        BookCard(
+                            bookCover = book.coverUrl() ?: "https://images.pexels.com/photos/46274/pexels-photo-46274.jpeg",
+                            bookTitle = book.title ?: "Unknown",
+                            bookAuthor = book.authorsAsString(),
+                            condition = book.firstPublishYear?.toString() ?: "N/A",
+                            onClickBook = {}
+                        )
+                    }
+                }
+            }
+
+            // Filter Chips
+            item {
+                val conditions = listOf("All", "Like New", "Very Good", "Good", "Fair")
+                var selected by remember { mutableStateOf("All") }
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(conditions) { condition ->
+                        FilterChip(
+                            selected = selected == condition,
+                            onClick = { selected = condition },
+                            label = { Text(condition) }
+                        )
+                    }
+                }
+            }
+
+            // User Uploaded Books
+            item {
+                Text("Community Library", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(sampleUserBooks) { book ->
+                        BookCard(
+                            bookCover = book.coverPhoto,
+                            bookTitle = book.bookTitle,
+                            bookAuthor = book.authorName,
+                            condition = book.condition,
+                            onClickBook = {}
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Minimal required data classes for preview only
+private data class BookDoc(
+    val title: String? = null,
+    val authors: List<String> = emptyList(),
+    val firstPublishYear: Int? = null,
+    val isbns: List<String>? = null
+) {
+    fun authorsAsString() = authors.joinToString(", ")
+    fun coverUrl() = isbns?.firstOrNull()?.let { "https://covers.openlibrary.org/b/isbn/$it-L.jpg" }
+}
+
+private data class BookDetail(
+    val bookTitle: String,
+    val authorName: String,
+    val condition: String,
+    val coverPhoto: String
+)

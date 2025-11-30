@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.ac.tees.mad.lendabook.domain.common.UiState
+import uk.ac.tees.mad.lendabook.domain.model.User
 import uk.ac.tees.mad.lendabook.domain.repo.FirebaseAuthRepo
 import uk.ac.tees.mad.lendabook.utils.getValidPassword
 import javax.inject.Inject
@@ -70,8 +71,12 @@ class CreateAccountViewModel @Inject constructor(
     private fun createAccount() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
+            val user = User(
+                name = createAccountUiState.value.name,
+                email = createAccountUiState.value.email
+            )
             authRepo.signUp(
-                email = createAccountUiState.value.email,
+                user = user,
                 password = createAccountUiState.value.password
             ).onSuccess {
                 _uiState.value = UiState.Success("Create Account Success!")

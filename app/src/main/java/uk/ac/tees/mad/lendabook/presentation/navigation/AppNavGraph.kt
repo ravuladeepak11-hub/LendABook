@@ -22,10 +22,10 @@ fun AppNavGraph() {
 
     NavHost(
         navController = navController,
-        startDestination = DashboardRoute
+        startDestination = SplashRoute
     ) {
         composable<SplashRoute> {
-            SplashScreen()
+            SplashScreen(navController)
         }
         composable<CreateAccountRoute> {
             CreateAccountScreen(navController)
