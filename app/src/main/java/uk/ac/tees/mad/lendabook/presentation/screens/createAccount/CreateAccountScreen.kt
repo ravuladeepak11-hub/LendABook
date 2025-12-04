@@ -22,16 +22,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import uk.ac.tees.mad.lendabook.R
@@ -193,69 +189,6 @@ fun CreateAccountContent(viewModel: CreateAccountViewModel, uiState: UiState) {
                 } else {
                     Text(text = stringResource(R.string.create_account))
                 }
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "LendABook – Create Account Screen")
-@Composable
-fun CreateAccountScreenPreview() {
-    val gradientBackground = listOf(
-        MaterialTheme.colorScheme.surface,
-        MaterialTheme.colorScheme.background
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Brush.linearGradient(gradientBackground))
-    ) {
-        Column(
-            modifier = Modifier
-                .statusBarsPadding()
-                .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Join LendABook",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            NameTextField(
-                value = "Emma Wilson",
-                onValueChange = {},
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            EmailTextField(
-                value = "emma.wilson@example.com",
-                onValueChange = {},
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            PasswordTextField(
-                value = "SecurePass123!",
-                onValueChange = {},
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = {},
-                modifier = Modifier.fillMaxWidth().height(56.dp)
-            ) {
-                Text("Create Account", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
             }
         }
     }

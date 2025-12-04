@@ -33,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -163,99 +162,4 @@ fun BookCoverImage(
             .clip(RoundedCornerShape(Dimen.RadiusMedium)),
         contentScale = ContentScale.Crop
     )
-}
-
-
-@OptIn(ExperimentalGlideComposeApi::class, ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "LendABook – Book Detail Screen")
-@Composable
-fun BookDetailScreenPreview() {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Book Detail") },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Book Cover
-            GlideImage(
-                model = "https://covers.openlibrary.org/b/id/9255575-L.jpg",
-                contentDescription = "The Midnight Library",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(280.dp)
-                    .clip(RoundedCornerShape(16.dp)),
-                contentScale = ContentScale.Crop
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Book Info
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "The Midnight Library",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-                Text(
-                    text = "by Matt Haig",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Tags
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    listOf("Available", "Fiction", "Like New", "Bestseller").forEach { tag ->
-                        AssistChip(
-                            onClick = {},
-                            label = { Text(tag) },
-                            colors = AssistChipDefaults.assistChipColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer
-                            )
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Text(
-                    text = "ISBN: 978-0525559474",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "Published: 2020",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-        }
-    }
 }

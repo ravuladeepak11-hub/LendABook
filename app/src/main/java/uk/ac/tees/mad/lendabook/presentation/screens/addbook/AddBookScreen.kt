@@ -3,7 +3,6 @@ package uk.ac.tees.mad.lendabook.presentation.screens.addbook
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,17 +51,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import uk.ac.tees.mad.lendabook.R
 import uk.ac.tees.mad.lendabook.domain.common.UiState
 import uk.ac.tees.mad.lendabook.presentation.navigation.DashboardRoute
+import uk.ac.tees.mad.lendabook.presentation.screens.setting.SettingViewModel
 import uk.ac.tees.mad.lendabook.utils.Dimen
+import uk.ac.tees.mad.lendabook.utils.NotificationHelper
 import uk.ac.tees.mad.lendabook.utils.showToast
 
 
@@ -71,6 +69,7 @@ import uk.ac.tees.mad.lendabook.utils.showToast
 fun AddBookScreen(navController: NavHostController) {
 
     val viewModel: AddBookViewModel = hiltViewModel()
+    val settingVM: SettingViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
@@ -124,7 +123,7 @@ fun AddBookScreen(navController: NavHostController) {
         },
         containerColor = MaterialTheme.colorScheme.surface,
     ) { paddingValues ->
-        AddBookContent(paddingValues, viewModel, uiState)
+        AddBookContent(paddingValues, viewModel, uiState, settingVM)
     }
 }
 
@@ -133,12 +132,13 @@ fun AddBookContent(
     paddingValues: PaddingValues,
     viewModel: AddBookViewModel,
     uiState: UiState,
+    settingVM: SettingViewModel,
 ) {
 
     val addBookUiState by viewModel.addBookUiState.collectAsState()
     val categories = stringArrayResource(id = R.array.book_categories)
     val conditions = stringArrayResource(id = R.array.book_conditions)
-
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -268,6 +268,13 @@ fun AddBookContent(
         //Upload Book Button
         Button(
             onClick = {
+                if (settingVM.notificationsEnabled.value) {
+                    NotificationHelper.showBookNotification(
+                        context,
+                        addBookUiState.bookTitle,
+                        addBookUiState.authorName
+                    )
+                }
                 viewModel.onEvent(AddBookUiEvent.UploadBookClicked)
 
             },
@@ -334,174 +341,6 @@ fun DropdownSelector(
         }
     }
 }
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "LendABook – Add Book Screen")
-@Composable
-fun AddBookScreenPreview() {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Add New Book") },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.surface
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            // Scan ISBN Button
-            Button(
-                onClick = {},
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Icon(Icons.Default.QrCodeScanner, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("Scan ISBN")
-            }
-
-            // Book Cover Section
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
-                    .padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Book Cover", style = MaterialTheme.typography.labelLarge)
-                Spacer(Modifier.height(8.dp))
-                Text("Add a clear photo of your book cover", color = Color.Gray)
-                Spacer(Modifier.height(16.dp))
-                OutlinedButton(
-                    onClick = {},
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                ) {
-                    Icon(Icons.Default.PhotoCamera, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Capture Cover")
-                }
-            }
-
-            // Book Details
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
-                    value = "The Midnight Library",
-                    onValueChange = {},
-                    label = { Text("Book Title") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                OutlinedTextField(
-                    value = "Matt Haig",
-                    onValueChange = {},
-                    label = { Text("Author Name") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                // Category Dropdown
-                var categoryExpanded by remember { mutableStateOf(false) }
-                var selectedCategory by remember { mutableStateOf("Fiction") }
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
-                        value = selectedCategory,
-                        onValueChange = {},
-                        label = { Text("Category") },
-                        readOnly = true,
-                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { categoryExpanded = true }
-                    )
-                    DropdownMenu(
-                        expanded = categoryExpanded,
-                        onDismissRequest = { categoryExpanded = false }
-                    ) {
-                        listOf("Fiction", "Non-Fiction", "Science", "Biography", "Fantasy").forEach {
-                            DropdownMenuItem(
-                                text = { Text(it) },
-                                onClick = {
-                                    selectedCategory = it
-                                    categoryExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                // Condition Dropdown
-                var conditionExpanded by remember { mutableStateOf(false) }
-                var selectedCondition by remember { mutableStateOf("Like New") }
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
-                        value = selectedCondition,
-                        onValueChange = {},
-                        label = { Text("Condition") },
-                        readOnly = true,
-                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { conditionExpanded = true }
-                    )
-                    DropdownMenu(
-                        expanded = conditionExpanded,
-                        onDismissRequest = { conditionExpanded = false }
-                    ) {
-                        listOf("Like New", "Very Good", "Good", "Fair", "Poor").forEach {
-                            DropdownMenuItem(
-                                text = { Text(it) },
-                                onClick = {
-                                    selectedCondition = it
-                                    conditionExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
-                        value = "TS1 3BX",
-                        onValueChange = {},
-                        label = { Text("Postcode") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    OutlinedTextField(
-                        value = "978-0525559474",
-                        onValueChange = {},
-                        label = { Text("ISBN") },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(24.dp))
-
-            // Upload Button
-            Button(
-                onClick = {},
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text("Upload Book", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-            }
-        }
-    }
-}
-
 
 
 

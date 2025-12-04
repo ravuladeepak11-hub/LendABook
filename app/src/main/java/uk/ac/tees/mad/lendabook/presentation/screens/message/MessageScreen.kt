@@ -13,11 +13,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import uk.ac.tees.mad.lendabook.R
 import uk.ac.tees.mad.lendabook.presentation.components.scaffold.DashboardScaffold
 import uk.ac.tees.mad.lendabook.presentation.navigation.MessageRoute
@@ -49,13 +47,4 @@ fun MessageScreen(navController: NavHostController) {
 @Composable
 fun MessageContent(paddingValues: PaddingValues) {
 
-}
-
-
-@Preview
-@Composable
-
-fun s(){
-    val nv = rememberNavController()
-    MessageScreen(nv)
 }

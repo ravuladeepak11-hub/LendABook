@@ -1,5 +1,6 @@
 package uk.ac.tees.mad.lendabook.presentation.screens.setting
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,6 +31,8 @@ class SettingViewModel @Inject constructor(
     init {
         getUser()
     }
+
+    var notificationsEnabled = mutableStateOf(false)
 
     fun onEvent(event: SettingUiEvent) {
         when (event) {
