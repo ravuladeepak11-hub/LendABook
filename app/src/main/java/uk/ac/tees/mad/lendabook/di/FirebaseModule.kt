@@ -8,7 +8,9 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import uk.ac.tees.mad.lendabook.data.firebase.ChatService
 import uk.ac.tees.mad.lendabook.data.repo.AddBookRepoImpl
+import uk.ac.tees.mad.lendabook.data.repo.ChatRepositoryImpl
 import uk.ac.tees.mad.lendabook.data.repo.FirebaseAuthRepoImpl
 import javax.inject.Singleton
 
@@ -25,7 +27,10 @@ object FirebaseModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseAuth(firebaseAuth: FirebaseAuth, firebaseFirestore: FirebaseFirestore): FirebaseAuthRepoImpl {
+    fun provideFirebaseAuth(
+        firebaseAuth: FirebaseAuth,
+        firebaseFirestore: FirebaseFirestore,
+    ): FirebaseAuthRepoImpl {
         return FirebaseAuthRepoImpl(firebaseAuth, firebaseFirestore)
     }
 
@@ -40,6 +45,14 @@ object FirebaseModule {
     fun provideFirestore(firebaseFirestore: FirebaseFirestore): AddBookRepoImpl {
         return AddBookRepoImpl(firebaseFirestore)
     }
+
+    @Provides
+    @Singleton
+    fun provideChatService(firebaseFirestore: FirebaseFirestore) = ChatService(firebaseFirestore)
+
+    @Provides
+    @Singleton
+    fun provideChatService(chatService: ChatService) = ChatRepositoryImpl(chatService)
 
 
 }
