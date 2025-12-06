@@ -1,8 +1,10 @@
 package uk.ac.tees.mad.lendabook.presentation.screens.message
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -18,7 +20,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import uk.ac.tees.mad.lendabook.R
 import uk.ac.tees.mad.lendabook.presentation.components.scaffold.DashboardScaffold
+import uk.ac.tees.mad.lendabook.presentation.navigation.ChatRoute
 import uk.ac.tees.mad.lendabook.presentation.navigation.MessageRoute
+import uk.ac.tees.mad.lendabook.presentation.screens.chat.ChatScreen
 
 
 fun NavGraphBuilder.messageRoute(navController: NavHostController) = composable<MessageRoute>() {
@@ -40,7 +44,15 @@ fun MessageScreen(navController: NavHostController) {
             )
         }
     ) { paddingValues ->
-        MessageContent(paddingValues)
+        Button(
+            onClick = {
+                navController.navigate(ChatRoute)
+            },
+            modifier = Modifier.padding(paddingValues = paddingValues)
+        ) {
+            Text("Chats")
+        }
+        MessageContent(paddingValues = paddingValues)
     }
 }
 

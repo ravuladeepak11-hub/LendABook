@@ -48,7 +48,7 @@ object FirebaseModule {
 
     @Provides
     @Singleton
-    fun provideChatService(firebaseFirestore: FirebaseFirestore) = ChatService(firebaseFirestore)
+    fun provideChatFireStore(firebaseFirestore: FirebaseFirestore) = ChatService(firebaseFirestore)
 
     @Provides
     @Singleton

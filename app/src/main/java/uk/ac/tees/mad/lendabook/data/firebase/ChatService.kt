@@ -1,5 +1,6 @@
 package uk.ac.tees.mad.lendabook.data.firebase
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
@@ -10,7 +11,6 @@ import uk.ac.tees.mad.lendabook.data.model.Message
 class ChatService(
     private val firestore: FirebaseFirestore
 ) {
-
     companion object{
         const val CHATS_COLLECTION = "chats"
         const val MESSAGE_COLLECTION = "message"
@@ -28,7 +28,7 @@ class ChatService(
 
     fun getMessages(chatId: String) = callbackFlow {
         val listener = chats.document(chatId)
-            .collection("messages")
+            .collection(MESSAGE_COLLECTION)
             .orderBy("timestamp", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -36,6 +36,7 @@ class ChatService(
                     return@addSnapshotListener
                 }
                 val messages = snapshot?.toObjects(Message::class.java).orEmpty()
+                Log.d("TAG", "getMessages: $messages")
                 trySend(messages)
             }
         awaitClose { listener.remove() }

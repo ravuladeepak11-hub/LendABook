@@ -1,5 +1,6 @@
 package uk.ac.tees.mad.lendabook.presentation.screens.chat
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,13 +12,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.ac.tees.mad.lendabook.data.model.Message
 import uk.ac.tees.mad.lendabook.domain.repo.ChatRepository
+import uk.ac.tees.mad.lendabook.domain.repo.FirebaseAuthRepo
 import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
-    private val chatRepository: ChatRepository
-) : ViewModel(){
+    private val chatRepository: ChatRepository,
+    private val firebaseAuthRepo: FirebaseAuthRepo
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState = _uiState.asStateFlow()
@@ -29,14 +32,24 @@ class ChatViewModel @Inject constructor(
         when (event) {
             is ChatUiEvent.MessageChange ->
                 _uiState.update { it.copy(currentMessage = event.value) }
+
             ChatUiEvent.OnSendChat -> send()
         }
     }
 
     fun initChat(chatId: String, currentUserId: String, receiverId: String) {
-        _uiState.update { it.copy(chatId = chatId, senderId = currentUserId, receiverId = receiverId) }
         viewModelScope.launch {
+            val userId = firebaseAuthRepo.getUserId() ?: ""
+
+            _uiState.update {
+                it.copy(
+                    chatId = userId,
+                    senderId = currentUserId,
+                    receiverId = receiverId
+                )
+            }
             chatRepository.getMessages(chatId).collect { messages ->
+                Log.d("TAG", "initChat: $messages")
                 _uiState.update { it.copy(messages = messages) }
             }
         }
