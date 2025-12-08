@@ -34,7 +34,7 @@ object SettingRoute
 
 
 @Serializable
-object BookDetailRoute
+data class BookDetailRoute(val isbn: String)
 
 @Serializable
 object ChatRoute

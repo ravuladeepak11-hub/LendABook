@@ -1,8 +1,13 @@
 package uk.ac.tees.mad.lendabook.presentation.screens.addbook
 
+import android.Manifest
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +28,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,6 +43,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -48,13 +56,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import coil3.compose.AsyncImage
 import uk.ac.tees.mad.lendabook.R
 import uk.ac.tees.mad.lendabook.domain.common.UiState
 import uk.ac.tees.mad.lendabook.presentation.navigation.DashboardRoute
@@ -62,6 +76,7 @@ import uk.ac.tees.mad.lendabook.presentation.screens.setting.SettingViewModel
 import uk.ac.tees.mad.lendabook.utils.Dimen
 import uk.ac.tees.mad.lendabook.utils.NotificationHelper
 import uk.ac.tees.mad.lendabook.utils.showToast
+import java.io.File
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -108,7 +123,7 @@ fun AddBookScreen(navController: NavHostController) {
             TopAppBar(
                 title = { Text(stringResource(id = R.string.add_new_book)) },
                 navigationIcon = {
-                    IconButton(onClick = { /* Handle back */ }) {
+                    IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(id = R.string.back)
@@ -134,11 +149,89 @@ fun AddBookContent(
     uiState: UiState,
     settingVM: SettingViewModel,
 ) {
-
+    val settingUiState by settingVM.settingUiState.collectAsState()
     val addBookUiState by viewModel.addBookUiState.collectAsState()
     val categories = stringArrayResource(id = R.array.book_categories)
     val conditions = stringArrayResource(id = R.array.book_conditions)
     val context = LocalContext.current
+
+    // State for camera capture
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var showImageSourceDialog by remember { mutableStateOf(false) }
+    var hasCameraPermission by remember { mutableStateOf(false) }
+
+    // Create a temporary file for the camera
+    val photoFile = remember {
+        File(context.cacheDir, "book_cover_${System.currentTimeMillis()}.jpg").apply {
+            createNewFile()
+        }
+    }
+
+    val photoUri = remember {
+        FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            photoFile
+        )
+    }
+
+    // Camera launcher
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            imageUri = photoUri
+            viewModel.onEvent(AddBookUiEvent.CoverImageChanged(photoUri))
+        }
+    }
+
+    // Gallery launcher
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            imageUri = it
+            viewModel.onEvent(AddBookUiEvent.CoverImageChanged(it))
+        }
+    }
+
+    // Permission launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasCameraPermission = isGranted
+        if (isGranted) {
+            cameraLauncher.launch(photoUri)
+        } else {
+            context.showToast("Camera permission is required to take photos")
+        }
+    }
+
+    // Image source dialog
+    if (showImageSourceDialog) {
+        AlertDialog(
+            onDismissRequest = { showImageSourceDialog = false },
+            title = { Text("Select Image Source") },
+            text = { Text("Choose where to get the book cover image from") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showImageSourceDialog = false
+                    permissionLauncher.launch(Manifest.permission.CAMERA)
+                }) {
+                    Text("Camera")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showImageSourceDialog = false
+                    galleryLauncher.launch("image/*")
+                }) {
+                    Text("Gallery")
+                }
+            }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -147,26 +240,9 @@ fun AddBookContent(
             .verticalScroll(rememberScrollState())
     ) {
 
-        //Scanner Button
-        Button(
-            onClick = {
-                /* Handle scan */
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            )
-        ) {
-            Icon(
-                Icons.Default.QrCodeScanner,
-                contentDescription = stringResource(id = R.string.scan_isbn)
-            )
-            Spacer(Modifier.width(Dimen.SpacerSmall))
-            Text(stringResource(id = R.string.scan_isbn))
-        }
 
         Spacer(modifier = Modifier.height(Dimen.SpacerMedium))
+
         //BookCoverCaptureSection
         Column(
             modifier = Modifier
@@ -181,24 +257,74 @@ fun AddBookContent(
                 style = MaterialTheme.typography.labelLarge
             )
             Spacer(Modifier.height(Dimen.SpacerSmall))
-            Text(
-                text = stringResource(id = R.string.add_cover_image_prompt),
-                color = Color.Gray
-            )
-            Spacer(Modifier.height(Dimen.SpacerMedium))
-            OutlinedButton(
-                onClick = { /* Capture cover */ },
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-            ) {
-                Icon(
-                    Icons.Default.PhotoCamera,
-                    contentDescription = stringResource(id = R.string.capture_cover)
+
+            // Show image if captured, otherwise show prompt
+            if (imageUri != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                ) {
+                    AsyncImage(
+                        model = imageUri,
+                        contentDescription = "Book Cover",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    // Delete button overlay
+                    IconButton(
+                        onClick = {
+                            imageUri = null
+                            viewModel.onEvent(AddBookUiEvent.CoverImageChanged(null))
+                        },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Remove image",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+                Spacer(Modifier.height(Dimen.SpacerMedium))
+                OutlinedButton(
+                    onClick = { showImageSourceDialog = true },
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                ) {
+                    Icon(
+                        Icons.Default.PhotoCamera,
+                        contentDescription = stringResource(id = R.string.capture_cover)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text("Change Image")
+                }
+            } else {
+                Text(
+                    text = stringResource(id = R.string.add_cover_image_prompt),
+                    color = Color.Gray
                 )
-                Spacer(Modifier.width(6.dp))
-                Text(stringResource(id = R.string.capture_cover))
+                Spacer(Modifier.height(Dimen.SpacerMedium))
+                OutlinedButton(
+                    onClick = { showImageSourceDialog = true },
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                ) {
+                    Icon(
+                        Icons.Default.PhotoCamera,
+                        contentDescription = stringResource(id = R.string.capture_cover)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(id = R.string.capture_cover))
+                }
             }
         }
+
         Spacer(modifier = Modifier.height(Dimen.SpacerMedium))
+
         //Book Details Section
         Column(
             verticalArrangement = Arrangement.spacedBy(Dimen.SpacerSmall)
@@ -268,7 +394,7 @@ fun AddBookContent(
         //Upload Book Button
         Button(
             onClick = {
-                if (settingVM.notificationsEnabled.value) {
+                if (settingUiState.settings.notificationsEnabled) {
                     NotificationHelper.showBookNotification(
                         context,
                         addBookUiState.bookTitle,
@@ -276,7 +402,6 @@ fun AddBookContent(
                     )
                 }
                 viewModel.onEvent(AddBookUiEvent.UploadBookClicked)
-
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
@@ -299,7 +424,6 @@ fun AddBookContent(
             }
         }
     }
-
 }
 
 
@@ -341,6 +465,3 @@ fun DropdownSelector(
         }
     }
 }
-
-
-

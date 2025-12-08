@@ -9,40 +9,74 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.ac.tees.mad.lendabook.domain.common.UiState
+import uk.ac.tees.mad.lendabook.domain.model.AppSettings
 import uk.ac.tees.mad.lendabook.domain.model.User
 import uk.ac.tees.mad.lendabook.domain.repo.FirebaseAuthRepo
+import uk.ac.tees.mad.lendabook.domain.repo.SettingsRepository
 import javax.inject.Inject
+
+data class SettingsUiState(
+    val settings: AppSettings = AppSettings(),
+)
+
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
     private val authRepo: FirebaseAuthRepo,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     private val _user = MutableStateFlow<User?>(null)
     val user = _user.asStateFlow()
+
     private val _navigation = MutableSharedFlow<SettingNavigation>()
     val navigation = _navigation.asSharedFlow()
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Idle)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
+    private val _settingUiState = MutableStateFlow(SettingsUiState())
+    val settingUiState = _settingUiState.asStateFlow()
+
     init {
         getUser()
+        viewModelScope.launch {
+            settingsRepository.getSettings().collect { prefs ->
+                _settingUiState.update { it.copy(settings = prefs) }
+            }
+        }
     }
 
-    var notificationsEnabled = mutableStateOf(false)
 
     fun onEvent(event: SettingUiEvent) {
         when (event) {
-            SettingUiEvent.DeleteAccountClick ->{
+            SettingUiEvent.DeleteAccountClick -> {
                 signOut()
             }
+
             SettingUiEvent.SignOutClick -> {
                 deleteAccount()
             }
+
+            is SettingUiEvent.ToggleDarkMode -> {
+                toggleDarkMode(event.enabled)
+            }
+
+            is SettingUiEvent.ToggleNotifications -> {
+                toggleNotifications(event.enabled)
+            }
         }
+    }
+
+    private fun toggleNotifications(enabled: Boolean) = viewModelScope.launch {
+        settingsRepository.updateNotifications(enabled)
+    }
+
+    private fun toggleDarkMode(enabled: Boolean) = viewModelScope.launch {
+        settingsRepository.updateDarkMode(enabled)
     }
 
     private fun getUser() {

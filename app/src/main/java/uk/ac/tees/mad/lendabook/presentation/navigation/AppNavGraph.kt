@@ -5,6 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import uk.ac.tees.mad.lendabook.presentation.screens.addbook.AddBookScreen
 import uk.ac.tees.mad.lendabook.presentation.screens.bookDetail.BookDetailScreen
 import uk.ac.tees.mad.lendabook.presentation.screens.browseBook.browseBookRoute
@@ -12,7 +13,7 @@ import uk.ac.tees.mad.lendabook.presentation.screens.chat.ChatScreen
 import uk.ac.tees.mad.lendabook.presentation.screens.createAccount.CreateAccountScreen
 import uk.ac.tees.mad.lendabook.presentation.screens.forget.ForgetScreen
 import uk.ac.tees.mad.lendabook.presentation.screens.login.LoginScreen
-import uk.ac.tees.mad.lendabook.presentation.screens.message.messageRoute
+import uk.ac.tees.mad.lendabook.presentation.screens.chatList.messageRoute
 import uk.ac.tees.mad.lendabook.presentation.screens.setting.settingRoute
 import uk.ac.tees.mad.lendabook.presentation.screens.splash.SplashScreen
 
@@ -50,9 +51,11 @@ fun AppNavGraph() {
             AddBookScreen(navController)
         }
 
-        composable<BookDetailRoute> {
-            BookDetailScreen(navController)
+        composable<BookDetailRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<BookDetailRoute>()
+            BookDetailScreen(navController, route.isbn)
         }
+
 
         composable<ChatRoute> {
             ChatScreen()

@@ -9,10 +9,12 @@ import uk.ac.tees.mad.lendabook.data.repo.AddBookRepoImpl
 import uk.ac.tees.mad.lendabook.data.repo.ApiBookRepoImpl
 import uk.ac.tees.mad.lendabook.data.repo.ChatRepositoryImpl
 import uk.ac.tees.mad.lendabook.data.repo.FirebaseAuthRepoImpl
+import uk.ac.tees.mad.lendabook.data.repo.SettingsRepositoryImpl
 import uk.ac.tees.mad.lendabook.domain.repo.AddBookRepo
 import uk.ac.tees.mad.lendabook.domain.repo.ApiBookRepo
 import uk.ac.tees.mad.lendabook.domain.repo.ChatRepository
 import uk.ac.tees.mad.lendabook.domain.repo.FirebaseAuthRepo
+import uk.ac.tees.mad.lendabook.domain.repo.SettingsRepository
 import javax.inject.Singleton
 
 
@@ -36,4 +38,8 @@ interface RepositoryModule {
     @Binds
     @Singleton
     fun provideChatRepo(chatRepositoryImpl: ChatRepositoryImpl): ChatRepository
+
+    @Binds
+    @Singleton
+    fun provideSettingRepo(settingsRepositoryImpl: SettingsRepositoryImpl): SettingsRepository
 }

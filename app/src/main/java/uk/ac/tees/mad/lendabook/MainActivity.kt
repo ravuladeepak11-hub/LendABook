@@ -8,9 +8,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import uk.ac.tees.mad.lendabook.presentation.navigation.AppNavGraph
+import uk.ac.tees.mad.lendabook.presentation.screens.setting.SettingViewModel
 import uk.ac.tees.mad.lendabook.ui.theme.LendABookTheme
 import uk.ac.tees.mad.lendabook.utils.NotificationHelper
 import uk.ac.tees.mad.lendabook.utils.showToast
@@ -30,7 +34,7 @@ class MainActivity : ComponentActivity() {
                     ActivityResultContracts.RequestPermission()
                 ) { granted ->
                     if (!granted) {
-                       this.showToast("permission Granted!")
+                        this.showToast("permission Granted!")
                     }
                 }.launch(permission)
             }
@@ -38,7 +42,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            LendABookTheme {
+            val viewModel: SettingViewModel = hiltViewModel()
+            val settings by viewModel.settingUiState.collectAsState()
+            val darkTheme = settings.settings.darkModeEnabled
+            LendABookTheme(
+                darkTheme = darkTheme
+            ) {
                 AppNavGraph()
             }
         }

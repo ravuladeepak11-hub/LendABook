@@ -55,4 +55,5 @@ object FirebaseModule {
     fun provideChatService(chatService: ChatService) = ChatRepositoryImpl(chatService)
 
 
+
 }

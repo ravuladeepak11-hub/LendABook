@@ -19,7 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
-    private val firebaseAuthRepo: FirebaseAuthRepo
+    private val firebaseAuthRepo: FirebaseAuthRepo,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -37,10 +37,9 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    fun initChat(chatId: String, currentUserId: String, receiverId: String) {
+    fun initChat(currentUserId: String, receiverId: String) {
         viewModelScope.launch {
             val userId = firebaseAuthRepo.getUserId() ?: ""
-
             _uiState.update {
                 it.copy(
                     chatId = userId,
@@ -48,7 +47,7 @@ class ChatViewModel @Inject constructor(
                     receiverId = receiverId
                 )
             }
-            chatRepository.getMessages(chatId).collect { messages ->
+            chatRepository.getMessages(userId).collect { messages ->
                 Log.d("TAG", "initChat: $messages")
                 _uiState.update { it.copy(messages = messages) }
             }

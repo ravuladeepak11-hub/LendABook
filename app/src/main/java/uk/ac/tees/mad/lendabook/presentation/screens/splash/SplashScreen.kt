@@ -8,6 +8,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -47,3 +48,20 @@ fun SplashScreen(navController: NavHostController) {
     )
 }
 
+
+@Preview(showBackground = true, name = "LendABook – Splash Screen")
+@Composable
+fun SplashScreenPreview() {
+    val gradientBackground = listOf(
+        MaterialTheme.colorScheme.surface,
+        MaterialTheme.colorScheme.background
+    )
+
+    AppIcon(
+        iconSize = 80.dp,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(brush = Brush.linearGradient(gradientBackground)),
+        contentAlignment = Alignment.Center
+    )
+}

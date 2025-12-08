@@ -7,9 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,16 +15,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -45,7 +39,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,15 +52,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import kotlinx.coroutines.launch
 import uk.ac.tees.mad.lendabook.R
 import uk.ac.tees.mad.lendabook.domain.model.BookDetail
 import uk.ac.tees.mad.lendabook.presentation.components.AppFilterChip
@@ -75,10 +69,6 @@ import uk.ac.tees.mad.lendabook.presentation.components.scaffold.DashboardScaffo
 import uk.ac.tees.mad.lendabook.presentation.navigation.AddBookRoute
 import uk.ac.tees.mad.lendabook.presentation.navigation.BookDetailRoute
 import uk.ac.tees.mad.lendabook.presentation.navigation.BrowseBookRoute
-import uk.ac.tees.mad.lendabook.presentation.navigation.ForgetRoute
-import uk.ac.tees.mad.lendabook.presentation.navigation.LoginRoute
-import uk.ac.tees.mad.lendabook.presentation.screens.browseBook.SearchSection
-import uk.ac.tees.mad.lendabook.presentation.screens.createAccount.CreateAccountNavigation
 import uk.ac.tees.mad.lendabook.utils.Dimen
 
 fun NavGraphBuilder.browseBookRoute(navController: NavHostController) =
@@ -101,7 +91,6 @@ fun BrowseBookScreen(navController: NavHostController) {
                 }
 
                 BrowseBookNavigation.BookDetails -> {
-                    navController.navigate(BookDetailRoute)
                 }
             }
         }
@@ -127,13 +116,13 @@ fun BrowseBookScreen(navController: NavHostController) {
         }
     }
     ) { paddingValues ->
-        BrowseBookContent(paddingValues, viewModel)
+        BrowseBookContent(paddingValues, navController,viewModel)
     }
 }
 
 
 @Composable
-fun BrowseBookContent(paddingValues: PaddingValues, viewModel: BrowseBookViewModel) {
+fun BrowseBookContent(paddingValues: PaddingValues,navController: NavController, viewModel: BrowseBookViewModel) {
     val bookList by viewModel.bookList.collectAsState()
     val apiBookDocs by viewModel.bookDocList.collectAsState()
     val conditionList = stringArrayResource(id = R.array.book_conditions).toList()
@@ -180,9 +169,7 @@ fun BrowseBookContent(paddingValues: PaddingValues, viewModel: BrowseBookViewMod
                             condition = book.firstPublishYear?.toString() ?: "N/A",
                             onClickBook = {
                                 book.isbns?.map { isbn ->
-                                    viewModel.onEvent(
-                                        BrowseBookUiEvent.ViewBookDetailClicked(isbn)
-                                    )
+                                    navController.navigate(BookDetailRoute(isbn = isbn))
                                 }
                             }
                         )
@@ -222,9 +209,8 @@ fun BrowseBookContent(paddingValues: PaddingValues, viewModel: BrowseBookViewMod
                             bookAuthor = book.authorName,
                             condition = book.condition,
                             onClickBook = {
-                                viewModel.onEvent(
-                                    BrowseBookUiEvent.ViewBookDetailClicked(book.bookISBN)
-                                )
+                                    navController.navigate(BookDetailRoute(isbn = book.bookISBN))
+
                             }
                         )
                     }
@@ -355,3 +341,154 @@ fun BookCard(
         }
     }
 }
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, name = "LendABook – Browse Books (Full Preview)")
+@Composable
+fun BrowseBookScreenPreview() {
+    val sampleApiBooks = listOf(
+        BookDoc(
+            title = "The Great Gatsby",
+            authors = listOf("F. Scott Fitzgerald"),
+            firstPublishYear = 1925,
+            isbns = listOf("9780743273565")
+        ),
+        BookDoc(
+            title = "To Kill a Mockingbird",
+            authors = listOf("Harper Lee"),
+            firstPublishYear = 1960,
+            isbns = listOf("9780446310789")
+        ),
+        BookDoc(
+            title = "1984",
+            authors = listOf("George Orwell"),
+            firstPublishYear = 1949,
+            isbns = listOf("9780451524935")
+        )
+    )
+
+    val sampleUserBooks = listOf(
+        BookDetail(
+            bookTitle = "Clean Code",
+            authorName = "Robert C. Martin",
+            condition = "Like New",
+            coverPhoto = "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800"
+        ),
+        BookDetail(
+            bookTitle = "Atomic Habits",
+            authorName = "James Clear",
+            condition = "Very Good",
+            coverPhoto = "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=800"
+        )
+    )
+
+    DashboardScaffold(
+        navController = rememberNavController(),
+        topBar = {
+            TopAppBar(
+                title = { Text("LendABook") },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {},
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Book")
+            }
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Search Section
+            item {
+                var query by remember { mutableStateOf("") }
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    placeholder = { Text("Search books...") },
+                    leadingIcon = { Icon(Icons.Default.Search, null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(50),
+                    singleLine = true
+                )
+            }
+
+            // API Books Section
+            item {
+                Text("Discover Books", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(sampleApiBooks) { book ->
+                        BookCard(
+                            bookCover = book.coverUrl() ?: "https://images.pexels.com/photos/46274/pexels-photo-46274.jpeg",
+                            bookTitle = book.title ?: "Unknown",
+                            bookAuthor = book.authorsAsString(),
+                            condition = book.firstPublishYear?.toString() ?: "N/A",
+                            onClickBook = {}
+                        )
+                    }
+                }
+            }
+
+            // Filter Chips
+            item {
+                val conditions = listOf("All", "Like New", "Very Good", "Good", "Fair")
+                var selected by remember { mutableStateOf("All") }
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(conditions) { condition ->
+                        FilterChip(
+                            selected = selected == condition,
+                            onClick = { selected = condition },
+                            label = { Text(condition) }
+                        )
+                    }
+                }
+            }
+
+            // User Uploaded Books
+            item {
+                Text("Community Library", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(sampleUserBooks) { book ->
+                        BookCard(
+                            bookCover = book.coverPhoto,
+                            bookTitle = book.bookTitle,
+                            bookAuthor = book.authorName,
+                            condition = book.condition,
+                            onClickBook = {}
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Minimal required data classes for preview only
+private data class BookDoc(
+    val title: String? = null,
+    val authors: List<String> = emptyList(),
+    val firstPublishYear: Int? = null,
+    val isbns: List<String>? = null
+) {
+    fun authorsAsString() = authors.joinToString(", ")
+    fun coverUrl() = isbns?.firstOrNull()?.let { "https://covers.openlibrary.org/b/isbn/$it-L.jpg" }
+}
+
+private data class BookDetail(
+    val bookTitle: String,
+    val authorName: String,
+    val condition: String,
+    val coverPhoto: String
+)
