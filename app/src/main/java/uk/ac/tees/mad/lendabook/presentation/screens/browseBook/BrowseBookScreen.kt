@@ -168,9 +168,9 @@ fun BrowseBookContent(paddingValues: PaddingValues,navController: NavController,
                             bookAuthor = book.authorsAsString(),
                             condition = book.firstPublishYear?.toString() ?: "N/A",
                             onClickBook = {
-                                book.isbns?.map { isbn ->
-                                    navController.navigate(BookDetailRoute(isbn = isbn))
-                                }
+//                                book.isbns?.map { isbn ->
+//                                    navController.navigate(BookDetailRoute(isbn = isbn))
+//                                }
                             }
                         )
                     }
