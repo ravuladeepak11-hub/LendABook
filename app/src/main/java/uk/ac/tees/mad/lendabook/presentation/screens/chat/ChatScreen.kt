@@ -30,7 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-
+import uk.ac.tees.mad.lendabook.data.model.Message
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,11 +39,11 @@ fun ChatScreen() {
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.initChat( "senderId", "receiverId")
+        viewModel.initPublicChat()  // CHANGED: Now public, no params
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Chat") }) },
+        topBar = { TopAppBar(title = { Text("Public Book Chat") }) },  // CHANGED: Descriptive title
         bottomBar = {
             Row(Modifier.padding(8.dp)) {
                 OutlinedTextField(
@@ -65,7 +65,7 @@ fun ChatScreen() {
                 .fillMaxSize()
         ) {
             items(uiState.messages) { msg ->
-                val isMine = msg.senderId == "senderId"
+                val isMine = msg.senderId == uiState.currentUserId  // CHANGED: Dynamic UID check
                 Box(
                     Modifier.fillMaxWidth(),
                     contentAlignment = if (isMine) Alignment.CenterEnd else Alignment.CenterStart
@@ -79,7 +79,7 @@ fun ChatScreen() {
                         modifier = Modifier.padding(6.dp)
                     ) {
                         Text(
-                            msg.content,
+                            text = "${msg.senderId}: ${msg.content}",  // NEW: Show UID + content
                             modifier = Modifier.padding(10.dp),
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -91,21 +91,25 @@ fun ChatScreen() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "LendABook – Chat Screen")
+@Preview(showBackground = true, name = "LendABook – Public Chat Screen")
 @Composable
 fun ChatScreenPreview() {
-    val sampleMessages = listOf(
-        ChatMessage(senderId = "me", content = "Hey! Is 'Clean Code' still available?"),
-        ChatMessage(senderId = "other", content = "Yes! It's in great condition."),
-        ChatMessage(senderId = "me", content = "Awesome! Can I pick it up Saturday?"),
-        ChatMessage(senderId = "other", content = "Perfect! 2pm at the town center works for me."),
-        ChatMessage(senderId = "me", content = "See you then! Thanks!"),
+    // Mock state for preview
+    val mockUiState = ChatUiState(
+        messages = listOf(
+            Message(senderId = "user123", content = "Hey! Is 'Clean Code' available?", timestamp = 1L),
+            Message(senderId = "user456", content = "Yes! Great condition.", timestamp = 2L),
+            Message(senderId = "user123", content = "Can I pick up Saturday?", timestamp = 3L),
+            Message(senderId = "user456", content = "2pm at town center.", timestamp = 4L),
+            Message(senderId = "user123", content = "See you then!", timestamp = 5L)
+        ),
+        currentUserId = "user123"  // Mock current UID
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Alex Thompson") },
+                title = { Text("Public Book Chat") },  // CHANGED: Public title
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
@@ -138,8 +142,8 @@ fun ChatScreenPreview() {
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(sampleMessages) { msg ->
-                val isMine = msg.senderId == "me"
+            items(mockUiState.messages) { msg ->
+                val isMine = msg.senderId == mockUiState.currentUserId
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Surface(
                         color = if (isMine)
@@ -153,7 +157,7 @@ fun ChatScreenPreview() {
                             .padding(4.dp)
                     ) {
                         Text(
-                            text = msg.content,
+                            text = "${msg.senderId}: ${msg.content}",  // NEW: Show UID + content
                             modifier = Modifier.padding(12.dp),
                             style = MaterialTheme.typography.bodyMedium,
                             color = if (isMine)

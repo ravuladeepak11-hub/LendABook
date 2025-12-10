@@ -10,9 +10,9 @@ class ChatRepositoryImpl @Inject constructor(
     private val chatService: ChatService,
 ) : ChatRepository {
 
-    override suspend fun sendMessage(chatId: String, message: Message) =
-        chatService.sendMessage(chatId, message)
+    override suspend fun sendPublicMessage(message: Message) =
+        chatService.sendMessage(message)
 
-    override fun getMessages(chatId: String): Flow<List<Message>> =
-        chatService.getMessages(chatId)
+    override fun getPublicMessages(): Flow<List<Message>> =
+        chatService.getPublicMessages()
 }

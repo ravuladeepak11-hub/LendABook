@@ -28,27 +28,26 @@ class ChatViewModel @Inject constructor(
     private val _navAction = MutableSharedFlow<ChatNavAction>()
     val navAction = _navAction.asSharedFlow()
 
+    init {
+        // Get current user ID when ViewModel is created
+        viewModelScope.launch {
+            val currentUserId = firebaseAuthRepo.getUserId() // or however you get it
+            _uiState.update { it.copy(currentUserId = currentUserId ?: "") }
+        }
+    }
+
     fun onEvent(event: ChatUiEvent) {
         when (event) {
             is ChatUiEvent.MessageChange ->
                 _uiState.update { it.copy(currentMessage = event.value) }
-
             ChatUiEvent.OnSendChat -> send()
         }
     }
 
-    fun initChat(currentUserId: String, receiverId: String) {
+    fun initPublicChat() {
         viewModelScope.launch {
-            val userId = firebaseAuthRepo.getUserId() ?: ""
-            _uiState.update {
-                it.copy(
-                    chatId = userId,
-                    senderId = currentUserId,
-                    receiverId = receiverId
-                )
-            }
-            chatRepository.getMessages(userId).collect { messages ->
-                Log.d("TAG", "initChat: $messages")
+            chatRepository.getPublicMessages().collect { messages ->
+                Log.d("TAG", "initPublicChat: $messages")
                 _uiState.update { it.copy(messages = messages) }
             }
         }
@@ -57,15 +56,18 @@ class ChatViewModel @Inject constructor(
     private fun send() = viewModelScope.launch {
         val state = _uiState.value
         if (state.currentMessage.isBlank()) return@launch
+
+        val currentUserId = state.currentUserId.ifEmpty {
+            firebaseAuthRepo.getUserId() ?: "anonymous"
+        }
+
         val msg = Message(
             id = UUID.randomUUID().toString(),
-            chatId = state.chatId,
-            senderId = state.senderId,
-            receiverId = state.receiverId,
-            content = state.currentMessage
+            senderId = currentUserId,  // ← ADD THIS
+            content = state.currentMessage,
+            timestamp = System.currentTimeMillis()
         )
-        chatRepository.sendMessage(state.chatId, msg)
+        chatRepository.sendPublicMessage(msg)
         _uiState.update { it.copy(currentMessage = "") }
     }
-
 }
